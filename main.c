@@ -21,6 +21,9 @@ void initSystem(void);
 unsigned int readADC(uint8_t channel);
 void init_timer(void);
 void __interrupt() timer_isr(void);
+bool getSensorResults(bool *low_active, bool *high_active, bool *flow_active);
+void startSensorReading(void);
+void setupTimer0(void);
 
 #define voltagechannel 3
 #define dryrunpotchannel 4
@@ -48,6 +51,14 @@ bool smc = 0;
 bool settingsmode = 0;
 unsigned int potraw;
 unsigned int voltageraw;
+
+
+volatile uint8_t reading_count = 0;
+volatile uint8_t low_sensor_high_count = 0;
+volatile uint8_t high_sensor_high_count = 0;
+volatile uint8_t flow_sensor_high_count = 0;
+volatile bool sensors_reading_complete = false;
+volatile bool sensors_reading_in_progress = false;
 void main(void) {
     
     
@@ -93,11 +104,32 @@ void main(void) {
         voltageraw = readADC(voltagechannel);
         if(seconds_counter % 2 == 0) {
             // Even second - turn ON
-            PORTAbits.RA1 = 1;
+            MOTOR_ON_LED = 1;
         } else {
             // Odd second - turn OFF
-            PORTAbits.RA1 = 0;
+            MOTOR_ON_LED = 0;
         }
+        
+        if (seconds_counter % 1 == 0 && !sensors_reading_in_progress && !sensors_reading_complete) {
+            setupTimer0();  // Set up and enable Timer0 for readings
+            startSensorReading();
+        }
+        bool low_sensor_active, high_sensor_active, flow_sensor_active;
+        if (getSensorResults(&low_sensor_active, &high_sensor_active, &flow_sensor_active)) {
+            if(high_sensor_active) {
+                MAINS_LED = 1;
+            }else{
+                MAINS_LED = 0;
+            }
+            
+            if(flow_sensor_active) {
+                DRY_RUN_LED = 1;
+            }else{
+                DRY_RUN_LED = 0;
+            }
+        }
+        
+        
     }
 }
 
@@ -134,20 +166,82 @@ unsigned int readADC(uint8_t channel) {
     return ((unsigned int)ADRESH << 8) | ADRESL;
 }
 
-void __interrupt() timer_isr(void)
-{
-    if(PIR1bits.TMR1IF)
-    {
+void setupTimer0(void) {
+    OPTION_REGbits.T0CS = 0;   // Use internal instruction cycle clock (FOSC/4)
+    OPTION_REGbits.PSA = 0;    // Prescaler is assigned to Timer0
+    OPTION_REGbits.PS = 0b010; // Set prescaler to 1:8
+    
+    // 4MHz / 4 = 1MHz instruction clock
+    // 1MHz / 8 = 125kHz timer increment
+    // 2ms × 125kHz = 250 counts needed
+    // 256 - 250 = 6 (preload value for 2ms delay)
+    
+    TMR0 = 6;                  // Preload Timer0
+    INTCONbits.TMR0IE = 1;     // Enable Timer0 interrupt
+}
+
+// Start sensor reading process
+void startSensorReading(void) {
+    if (!sensors_reading_in_progress) {
+        reading_count = 0;
+        low_sensor_high_count = 0;
+        high_sensor_high_count = 0;
+        flow_sensor_high_count = 0;
+        sensors_reading_complete = false;
+        sensors_reading_in_progress = true;
+    }
+}
+
+// Check if sensor reading is complete and get results
+bool getSensorResults(bool *low_active, bool *high_active, bool *flow_active) {
+    if (sensors_reading_complete) {
+        *low_active = (low_sensor_high_count < 45);
+        *high_active = (high_sensor_high_count < 45);
+        *flow_active = (flow_sensor_high_count < 45);
+        sensors_reading_complete = false;
+        return true;
+    }
+    return false;
+}
+
+// Combined interrupt handler for both Timer0 and Timer1
+void __interrupt() isr(void) {
+    // Timer1 interrupt handler (your existing code)
+    if(PIR1bits.TMR1IF) {
         if(to == 0){
             seconds_counter++;
             to = 1;
-        }else{
+        } else {
             to = 0;
         }
         PIR1bits.TMR1IF = 0;  // Clear interrupt flag
-        TMR1H = 0x12;  // High byte of 49911
-        TMR1L = 0x38;  // Low byte of 49911
+        TMR1H = 0x12;         // Reload Timer1
+        TMR1L = 0x38;
+    }
+    
+    // Timer0 interrupt handler for sensor reading
+    if(INTCONbits.TMR0IF) {
+        // Reload Timer0 for next 2ms interrupt
+        TMR0 = 6;
+        INTCONbits.TMR0IF = 0;
         
+        // Only process if sensor reading is in progress
+        if(sensors_reading_in_progress) {
+            // Read sensors
+            if(LOW_SENSOR_PIN) low_sensor_high_count++;
+            if(HIGH_SENSOR_PIN) high_sensor_high_count++;
+            if(FLOW_SENSOR_PIN) flow_sensor_high_count++;
+            
+            // Increment reading count
+            reading_count++;
+            
+            // Check if we've completed 50 readings
+            if(reading_count >= 50) {
+                sensors_reading_in_progress = false;
+                sensors_reading_complete = true;
+                INTCONbits.TMR0IE = 0;  // Disable Timer0 interrupt until next reading cycle
+            }
+        }
     }
 }
 
@@ -165,3 +259,6 @@ void init_timer(void)
     
     T1CONbits.TMR1ON = 1; // Start Timer1
 }
+
+
+
