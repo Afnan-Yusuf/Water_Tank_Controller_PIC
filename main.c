@@ -16,14 +16,18 @@
 
 #define _XTAL_FREQ 4000000      // 4 MHz internal oscillator
 
-// Function prototypes
-void initSystem(void);
-unsigned int readADC(uint8_t channel);
-void init_timer(void);
-void __interrupt() timer_isr(void);
-bool getSensorResults(bool *low_active, bool *high_active, bool *flow_active);
-void startSensorReading(void);
-void setupTimer0(void);
+
+
+#define ADDR_SIGNATURE     0x00    // 1 byte signature (0xAA)
+#define ADDR_TIMOUT_INDEX    0x01    // 1 byte
+#define ADDR_LOWVOLTAGE  0x02    // 2 bytes (0x02-0x03)
+#define ADDR_HIGHVOLTAGE  0x04    // 2 bytes (0x04-0x05)
+#define ADDR_LOWRUNNINGV  0x06    // 2 bytes (0x06-0x07)
+#define ADDR_HIGHRUNNINGV  0x08    // 2 bytes (0x08-0x09)
+
+#define EEPROM_SIGNATURE   0xAA
+
+
 
 #define voltagechannel 3
 #define dryrunpotchannel 4
@@ -45,13 +49,31 @@ void setupTimer0(void);
 #define LOW_SENSOR_PIN   PORTBbits.RB3   // Pin 24
 #define HIGH_SENSOR_PIN  PORTBbits.RB4   // Pin 25
 #define FLOW_SENSOR_PIN  PORTBbits.RB5   // Pin 26
+
+unsigned int minvoltagelimit = 1160;
+unsigned int maxvoltagelimit = 255;
+unsigned int minimumrunningvoltage = 170;
+unsigned int maximumrinningvoltage = 285;
+
+uint8_t maxruntimeindex = 3;
+uint16_t maxruntime [5] = {30, 45, 60, 120, 0xFFFF};
+
+
+
+
+#define voltagesamples 16
+
 volatile unsigned long seconds_counter = 0;
 bool to = 0;
 bool smc = 0;
 bool settingsmode = 0;
+
+
 unsigned int potraw;
 unsigned int voltageraw;
-
+unsigned int dryruntime = 0;
+uint8_t voltage = 0;
+uint16_t voltagesum = 0;
 
 volatile uint8_t reading_count = 0;
 volatile uint8_t low_sensor_high_count = 0;
@@ -59,6 +81,31 @@ volatile uint8_t high_sensor_high_count = 0;
 volatile uint8_t flow_sensor_high_count = 0;
 volatile bool sensors_reading_complete = false;
 volatile bool sensors_reading_in_progress = false;
+void EEPROM_Write(unsigned char address, unsigned char data);
+unsigned char EEPROM_Read(unsigned char address);
+void EEPROM_Write16(unsigned char address, unsigned int data);
+unsigned int EEPROM_Read16(unsigned char address);
+bool loadSettings(unsigned char *value8bit, unsigned int *value16bit1,
+                 unsigned int *value16bit2, unsigned int *value16bit3,
+                 unsigned int *value16bit4);
+void saveSettings(unsigned char value8bit, unsigned int value16bit1, 
+                  unsigned int value16bit2, unsigned int value16bit3, 
+                  unsigned int value16bit4);
+
+
+bool voltageerror = false;
+bool drurunerror = false;
+bool timeouterror = false;
+
+// Function prototypes
+void initSystem(void);
+unsigned int readADC(uint8_t channel);
+void init_timer(void);
+void __interrupt() timer_isr(void);
+bool getSensorResults(bool *low_active, bool *high_active, bool *flow_active);
+void startSensorReading(void);
+void setupTimer0(void);
+
 void main(void) {
     
     
@@ -66,6 +113,21 @@ void main(void) {
     // Initialize the system
     initSystem();
     
+    if (!loadSettings(&maxruntimeindex, &minvoltagelimit, &maxvoltagelimit,
+                     &minimumrunningvoltage, &maximumrinningvoltage)) {
+        // EEPROM wasn't properly initialized, set defaults
+        maxruntimeindex = 0;        // Default threshold
+        minvoltagelimit = 1160;
+        maxvoltagelimit = 255;
+        minimumrunningvoltage = 170;
+        maximumrinningvoltage = 285;
+        
+        // Save defaults to EEPROM
+        saveSettings(maxruntimeindex, minvoltagelimit, maxvoltagelimit,
+                    minimumrunningvoltage, maximumrinningvoltage);
+    }
+    potraw = readADC(dryrunpotchannel);
+    dryruntime = (((uint32_t) potraw * 360) / 1023) + 120; 
     for(uint8_t i = 0; i < 10; i++) {
         MAINS_LED = 1;
         MOTOR_ON_LED = 1;
@@ -100,8 +162,18 @@ void main(void) {
     }
     while(1) {
         // Read ADC value from RA0 (AN0)
-        potraw = readADC(dryrunpotchannel);
-        voltageraw = readADC(voltagechannel);
+        
+        //voltageraw = readADC(voltagechannel);
+        
+        for (uint8_t i = 0; i < voltagesamples; i++) {
+            voltagesum += readADC(voltagechannel);
+        }
+        voltageraw = voltagesum >> 4; // Average the readings
+        voltagesum = 0;
+        voltage = (((uint32_t) voltageraw * 235) / 1023) +85;
+        
+        
+        
         if(seconds_counter % 2 == 0) {
             // Even second - turn ON
             MOTOR_ON_LED = 1;
@@ -173,7 +245,7 @@ void setupTimer0(void) {
     
     // 4MHz / 4 = 1MHz instruction clock
     // 1MHz / 8 = 125kHz timer increment
-    // 2ms × 125kHz = 250 counts needed
+    // 2ms ? 125kHz = 250 counts needed
     // 256 - 250 = 6 (preload value for 2ms delay)
     
     TMR0 = 6;                  // Preload Timer0
@@ -262,3 +334,98 @@ void init_timer(void)
 
 
 
+void EEPROM_Write(unsigned char address, unsigned char data) {
+    // Wait for any previous write to complete
+    while(EECON1bits.WR);
+    
+    // Set up the address and data registers
+    EEADR = address;
+    EEDATA = data;
+    
+    // Configure for EEPROM write
+    EECON1bits.EEPGD = 0;   // Select EEPROM data memory
+    EECON1bits.WREN = 1;    // Enable writes to EEPROM
+    
+    // Required sequence to start the write
+    INTCONbits.GIE = 0;     // Disable interrupts
+    EECON2 = 0x55;          // Magic sequence
+    EECON2 = 0xAA;
+    EECON1bits.WR = 1;      // Start write
+    
+    // Optional: Wait for write to complete
+    while(EECON1bits.WR);
+    
+    // Cleanup
+    EECON1bits.WREN = 0;    // Disable writes
+    INTCONbits.GIE = 1;     // Enable interrupts if they were enabled before
+}
+
+// Function to read a byte from EEPROM
+unsigned char EEPROM_Read(unsigned char address) {
+    // Wait for any pending write
+    while(EECON1bits.WR);
+    
+    // Set up the address
+    EEADR = address;
+    
+    // Configure for EEPROM read
+    EECON1bits.EEPGD = 0;   // Select EEPROM data memory
+    EECON1bits.RD = 1;      // Initiate read
+    
+    // Data is available immediately
+    return EEDATA;
+}
+
+// Function to write a 16-bit value to EEPROM (2 bytes)
+void EEPROM_Write16(unsigned char address, unsigned int data) {
+    // Store low byte at address
+    EEPROM_Write(address, data & 0xFF);
+    
+    // Store high byte at address + 1
+    EEPROM_Write(address + 1, data >> 8);
+}
+
+// Function to read a 16-bit value from EEPROM (2 bytes)
+unsigned int EEPROM_Read16(unsigned char address) {
+    unsigned int result;
+    
+    // Read low byte
+    result = EEPROM_Read(address);
+    
+    // Read high byte and combine
+    result |= ((unsigned int)EEPROM_Read(address + 1)) << 8;
+    
+    return result;
+}
+
+bool loadSettings(unsigned char *value8bit, unsigned int *value16bit1,
+                 unsigned int *value16bit2, unsigned int *value16bit3,
+                 unsigned int *value16bit4) {
+    // Check for valid signature
+    if(EEPROM_Read(ADDR_SIGNATURE) != EEPROM_SIGNATURE) {
+        return false;  // No valid data found
+    }
+    
+    // Read all values
+    *value8bit = EEPROM_Read(ADDR_TIMOUT_INDEX);
+    *value16bit1 = EEPROM_Read16(ADDR_LOWVOLTAGE);
+    *value16bit2 = EEPROM_Read16(ADDR_HIGHVOLTAGE);
+    *value16bit3 = EEPROM_Read16(ADDR_LOWRUNNINGV);
+    *value16bit4 = EEPROM_Read16(ADDR_HIGHRUNNINGV);
+    
+    return true;  // Valid data loaded
+}
+
+void saveSettings(unsigned char value8bit, unsigned int value16bit1, 
+                  unsigned int value16bit2, unsigned int value16bit3, 
+                  unsigned int value16bit4) {
+    // Write all values first
+    EEPROM_Write(ADDR_TIMOUT_INDEX, value8bit);
+    EEPROM_Write16(ADDR_LOWVOLTAGE, value16bit1);
+    EEPROM_Write16(ADDR_HIGHVOLTAGE, value16bit2);
+    EEPROM_Write16(ADDR_LOWRUNNINGV, value16bit3);
+    EEPROM_Write16(ADDR_HIGHRUNNINGV, value16bit4);
+    
+    // Write signature last (acts as a "write complete" flag)
+    EEPROM_Write(ADDR_SIGNATURE, EEPROM_SIGNATURE);
+}
