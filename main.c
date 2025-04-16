@@ -96,6 +96,13 @@ void saveSettings(unsigned char value8bit, unsigned int value16bit1,
 bool voltageerror = false;
 bool drurunerror = false;
 bool timeouterror = false;
+bool motorrunning = false;
+bool tankempty = false;
+bool taknkfull = false;
+
+unsigned long dryrunstarttime = 0;
+unsigned long motorstarttime = 0;
+
 
 // Function prototypes
 void initSystem(void);
@@ -202,11 +209,33 @@ void main(void) {
 
             if(low_sensor_active && high_sensor_active) {
                 VOLTAGE_ALERT_LED = 1;
+                tankempty = false;
             }
             if(!low_sensor_active && !high_sensor_active) {
                 VOLTAGE_ALERT_LED = 0;
+                tankempty = true;
             }
         }
+
+        if(tankempty){
+            if(!timeouterror && !voltageerror && !drurunerror && !motorrunning) {
+                // Start the motor
+                RELAY_MOTOR = 1;
+                motorstarttime = seconds_counter;
+                motorrunning = true;
+                
+            }
+            if(motorrunning){
+                if(seconds_counter - motorstarttime >= maxruntime[0]){
+                    // Stop the motor
+                    RELAY_MOTOR = 0;
+                    motorrunning = false;
+                    timeouterror = true;
+                }
+            }
+        }
+
+
         
         
     }
