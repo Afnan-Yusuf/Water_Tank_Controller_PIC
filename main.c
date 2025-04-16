@@ -1,5 +1,6 @@
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <xc.h>
 
 // Configuration bits
@@ -229,6 +230,10 @@ void main(void) {
         } else {
           lastdryruncheck = 0;
           waterreached = true;
+        }
+
+        if(voltage > maximumrinningvoltage || voltage < minimumrunningvoltage){
+          voltageerror = true;
         }
 
         if (!waterreached) {
