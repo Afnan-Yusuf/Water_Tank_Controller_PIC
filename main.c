@@ -23,29 +23,26 @@
 #define ADDR_HIGHVOLTAGE 0x04  // 2 bytes (0x04-0x05)
 #define ADDR_LOWRUNNINGV 0x06  // 2 bytes (0x06-0x07)
 #define ADDR_HIGHRUNNINGV 0x08 // 2 bytes (0x08-0x09)
-
 #define EEPROM_SIGNATURE 0xAA
-
-#define voltagechannel 3
-#define dryrunpotchannel 4
 
 #define MAINS_LED PORTAbits.RA0         // Pin 2
 #define MOTOR_ON_LED PORTAbits.RA1      // Pin 3
 #define DRY_RUN_LED PORTAbits.RA2       // Pin 4
 #define VOLTAGE_ALERT_LED PORTAbits.RA4 // Pin 6
-
-#define PUSHBUTTON PORTCbits.RC1 // Pin 12
-
-// Relays
 #define RELAY_STARTER PORTCbits.RC2 // Pin 13
 #define RELAY_MOTOR PORTCbits.RC3   // Pin 14 (combines phase and neutral)
-
-// Buzzer
 #define BUZZER PORTCbits.RC4 // Pin 15
 
+#define voltagechannel 3
+#define dryrunpotchannel 4
+#define PUSHBUTTON PORTCbits.RC1 // Pin 12
 #define LOW_SENSOR_PIN PORTBbits.RB5  // Pin 24
 #define HIGH_SENSOR_PIN PORTBbits.RB4 // Pin 25
 #define FLOW_SENSOR_PIN PORTBbits.RB3 // Pin 26
+
+volatile unsigned long seconds_counter = 0;
+unsigned long lastdryruncheck = 0;
+unsigned long motorstarttime = 0;
 
 unsigned int minvoltagelimit = 1160;
 unsigned int maxvoltagelimit = 255;
@@ -55,13 +52,11 @@ unsigned int maximumrinningvoltage = 285;
 uint8_t maxruntimeindex = 3;
 uint16_t maxruntime[5] = {30, 45, 60, 120, 0xFFFF};
 
-#define voltagesamples 16
-
-volatile unsigned long seconds_counter = 0;
 bool to = 0;
 bool smc = 0;
 bool settingsmode = 0;
 
+#define voltagesamples 16
 unsigned int potraw;
 unsigned int voltageraw;
 unsigned int dryruntime = 0;
@@ -74,16 +69,6 @@ volatile uint8_t high_sensor_high_count = 0;
 volatile uint8_t flow_sensor_high_count = 0;
 volatile bool sensors_reading_complete = false;
 volatile bool sensors_reading_in_progress = false;
-void EEPROM_Write(unsigned char address, unsigned char data);
-unsigned char EEPROM_Read(unsigned char address);
-void EEPROM_Write16(unsigned char address, unsigned int data);
-unsigned int EEPROM_Read16(unsigned char address);
-bool loadSettings(unsigned char *value8bit, unsigned int *value16bit1,
-                  unsigned int *value16bit2, unsigned int *value16bit3,
-                  unsigned int *value16bit4);
-void saveSettings(unsigned char value8bit, unsigned int value16bit1,
-                  unsigned int value16bit2, unsigned int value16bit3,
-                  unsigned int value16bit4);
 
 bool voltageerror = false;
 bool dryrunerror = false;
@@ -93,10 +78,12 @@ bool tankempty = false;
 bool taknkfull = false;
 bool waterreached = false;
 
-unsigned long lastdryruncheck = 0;
-unsigned long motorstarttime = 0;
-
-// Function prototypes
+void EEPROM_Write(unsigned char address, unsigned char data);
+unsigned char EEPROM_Read(unsigned char address);
+void EEPROM_Write16(unsigned char address, unsigned int data);
+unsigned int EEPROM_Read16(unsigned char address);
+bool loadSettings(unsigned char *value8bit, unsigned int *value16bit1, unsigned int *value16bit2, unsigned int *value16bit3, unsigned int *value16bit4);
+void saveSettings(unsigned char value8bit, unsigned int value16bit1, unsigned int value16bit2, unsigned int value16bit3, unsigned int value16bit4);
 void initSystem(void);
 unsigned int readADC(uint8_t channel);
 void init_timer(void);
@@ -323,7 +310,6 @@ void setupTimer0(void) {
   INTCONbits.TMR0IE = 1; // Enable Timer0 interrupt
 }
 
-// Start sensor reading process
 void startSensorReading(void) {
   if (!sensors_reading_in_progress) {
     reading_count = 0;
@@ -346,7 +332,6 @@ bool getSensorResults(bool *low_active, bool *high_active, bool *flow_active) {
   return false;
 }
 
-// Combined interrupt handler for both Timer0 and Timer1
 void __interrupt() isr(void) {
   // Timer1 interrupt handler (your existing code)
   if (PIR1bits.TMR1IF) {
@@ -361,7 +346,6 @@ void __interrupt() isr(void) {
     TMR1L = 0x38;
   }
 
-  // Timer0 interrupt handler for sensor reading
   if (INTCONbits.TMR0IF) {
     // Reload Timer0 for next 2ms interrupt
     TMR0 = 6;
@@ -409,7 +393,6 @@ void EEPROM_Write(unsigned char address, unsigned char data) {
   EEADR = address;
   EEDATA = data;
 
-  // Configure for EEPROM write
   EECON1bits.EEPGD = 0; // Select EEPROM data memory
   EECON1bits.WREN = 1;  // Enable writes to EEPROM
 
@@ -420,55 +403,41 @@ void EEPROM_Write(unsigned char address, unsigned char data) {
 
   while (EECON1bits.WR);
 
-  // Cleanup
   EECON1bits.WREN = 0; // Disable writes
   INTCONbits.GIE = 1;  // Enable interrupts if they were enabled before
 }
 
 unsigned char EEPROM_Read(unsigned char address) {
   while (EECON1bits.WR);
-
   EEADR = address;
-
   EECON1bits.EEPGD = 0; // Select EEPROM data memory
   EECON1bits.RD = 1;    // Initiate read
-
   return EEDATA;
 }
 
 void EEPROM_Write16(unsigned char address, unsigned int data) {
   EEPROM_Write(address, data & 0xFF);
-
   EEPROM_Write(address + 1, data >> 8);
 }
 
 unsigned int EEPROM_Read16(unsigned char address) {
   unsigned int result;
-
-  // Read low byte
   result = EEPROM_Read(address);
-
-  // Read high byte and combine
   result |= ((unsigned int)EEPROM_Read(address + 1)) << 8;
-
   return result;
 }
 
 bool loadSettings(unsigned char *value8bit, unsigned int *value16bit1,
                   unsigned int *value16bit2, unsigned int *value16bit3,
                   unsigned int *value16bit4) {
-  // Check for valid signature
   if (EEPROM_Read(ADDR_SIGNATURE) != EEPROM_SIGNATURE) {
     return false; // No valid data found
   }
-
-  // Read all values
   *value8bit = EEPROM_Read(ADDR_TIMOUT_INDEX);
   *value16bit1 = EEPROM_Read16(ADDR_LOWVOLTAGE);
   *value16bit2 = EEPROM_Read16(ADDR_HIGHVOLTAGE);
   *value16bit3 = EEPROM_Read16(ADDR_LOWRUNNINGV);
   *value16bit4 = EEPROM_Read16(ADDR_HIGHRUNNINGV);
-
   return true; // Valid data loaded
 }
 
@@ -481,7 +450,5 @@ void saveSettings(unsigned char value8bit, unsigned int value16bit1,
   EEPROM_Write16(ADDR_HIGHVOLTAGE, value16bit2);
   EEPROM_Write16(ADDR_LOWRUNNINGV, value16bit3);
   EEPROM_Write16(ADDR_HIGHRUNNINGV, value16bit4);
-
-  // Write signature last (acts as a "write complete" flag)
   EEPROM_Write(ADDR_SIGNATURE, EEPROM_SIGNATURE);
 }
