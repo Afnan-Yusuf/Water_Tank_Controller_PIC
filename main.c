@@ -44,7 +44,7 @@ volatile unsigned long seconds_counter = 0;
 unsigned long lastdryruncheck = 0;
 unsigned long motorstarttime = 0;
 unsigned long lastvoltageerror = 0;
-unsigned int maxvoltageerrortime = ;
+unsigned int maxvoltageerrortime = 10;
 
 
 unsigned int minvoltagelimit = 1160;
@@ -81,6 +81,12 @@ bool tankempty = false;
 bool taknkfull = false;
 bool waterreached = false;
 
+
+static unsigned int buzzer_start_time = 0;
+static unsigned int buzzer_duration = 0;
+bool buzzer_active = 0;
+
+void buzzer_beep(unsigned int duration_seconds);
 void EEPROM_Write(unsigned char address, unsigned char data);
 unsigned char EEPROM_Read(unsigned char address);
 void EEPROM_Write16(unsigned char address, unsigned int data);
@@ -461,4 +467,20 @@ void saveSettings(unsigned char value8bit, unsigned int value16bit1,
   EEPROM_Write16(ADDR_LOWRUNNINGV, value16bit3);
   EEPROM_Write16(ADDR_HIGHRUNNINGV, value16bit4);
   EEPROM_Write(ADDR_SIGNATURE, EEPROM_SIGNATURE);
+}
+
+void buzzer_beep(unsigned int duration_seconds) {
+    if (!buzzer_active) {
+        // Start the buzzer
+        BUZZER = 1;
+        buzzer_start_time = seconds_counter;
+        buzzer_duration = duration_seconds;
+        buzzer_active = 1;
+    }
+
+    // Check if time is up
+    if (buzzer_active && (seconds_counter - buzzer_start_time >= buzzer_duration)) {
+        BUZZER = 0; // Turn off buzzer
+        buzzer_active = 0;
+    }
 }
