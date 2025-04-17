@@ -158,9 +158,6 @@ void main(void) {
     __delay_ms(1000);
   }
   while (1) {
-    // Read ADC value from RA0 (AN0)
-
-    // voltageraw = readADC(voltagechannel);
 
     for (uint8_t i = 0; i < voltagesamples; i++) {
       voltagesum += readADC(voltagechannel);
@@ -248,6 +245,12 @@ void main(void) {
 
 
       }
+    }else{
+        if(motorrunning){
+            motorrunning = false;
+            RELAY_MOTOR = 0;
+            
+        }
     }
     if(timeouterror){
         motorrunning = false;
@@ -276,11 +279,9 @@ void main(void) {
 
 void initSystem(void) {
   // Configure oscillator
-  OSCCONbits.IRCF = 0b110; // 4 MHz internal oscillator
-  // Configure I/O ports
-  ANSEL = 0b00011000; // AN0 (RA0) as analog input
-  ANSELH = 0x00;      // All PORTB pins digital
-  // Set RA0 as input, RC0 as output
+  OSCCONbits.IRCF = 0b110; 
+  ANSEL = 0b00011000; 
+  ANSELH = 0x00;      
   TRISA = 0b11101000;
   TRISB = 0b00111000;
   TRISC = 0b00000011;
@@ -334,7 +335,6 @@ void startSensorReading(void) {
   }
 }
 
-// Check if sensor reading is complete and get results
 bool getSensorResults(bool *low_active, bool *high_active, bool *flow_active) {
   if (sensors_reading_complete) {
     *low_active = (low_sensor_high_count < 45);
@@ -377,7 +377,6 @@ void __interrupt() isr(void) {
       if (FLOW_SENSOR_PIN)
         flow_sensor_high_count++;
 
-      // Increment reading count
       reading_count++;
 
       // Check if we've completed 50 readings
@@ -394,7 +393,6 @@ void __interrupt() isr(void) {
 void init_timer(void) {
   T1CON = 0b00110000;
 
-  // Initial preload values
   TMR1H = 0x12; // High byte of 49911
   TMR1L = 0x38; // Low byte of 49911
 
@@ -406,11 +404,8 @@ void init_timer(void) {
 }
 
 void EEPROM_Write(unsigned char address, unsigned char data) {
-  // Wait for any previous write to complete
-  while (EECON1bits.WR)
-    ;
+  while (EECON1bits.WR);
 
-  // Set up the address and data registers
   EEADR = address;
   EEDATA = data;
 
@@ -418,48 +413,35 @@ void EEPROM_Write(unsigned char address, unsigned char data) {
   EECON1bits.EEPGD = 0; // Select EEPROM data memory
   EECON1bits.WREN = 1;  // Enable writes to EEPROM
 
-  // Required sequence to start the write
   INTCONbits.GIE = 0; // Disable interrupts
   EECON2 = 0x55;      // Magic sequence
   EECON2 = 0xAA;
   EECON1bits.WR = 1; // Start write
 
-  // Optional: Wait for write to complete
-  while (EECON1bits.WR)
-    ;
+  while (EECON1bits.WR);
 
   // Cleanup
   EECON1bits.WREN = 0; // Disable writes
   INTCONbits.GIE = 1;  // Enable interrupts if they were enabled before
 }
 
-// Function to read a byte from EEPROM
 unsigned char EEPROM_Read(unsigned char address) {
-  // Wait for any pending write
-  while (EECON1bits.WR)
-    ;
+  while (EECON1bits.WR);
 
-  // Set up the address
   EEADR = address;
 
-  // Configure for EEPROM read
   EECON1bits.EEPGD = 0; // Select EEPROM data memory
   EECON1bits.RD = 1;    // Initiate read
 
-  // Data is available immediately
   return EEDATA;
 }
 
-// Function to write a 16-bit value to EEPROM (2 bytes)
 void EEPROM_Write16(unsigned char address, unsigned int data) {
-  // Store low byte at address
   EEPROM_Write(address, data & 0xFF);
 
-  // Store high byte at address + 1
   EEPROM_Write(address + 1, data >> 8);
 }
 
-// Function to read a 16-bit value from EEPROM (2 bytes)
 unsigned int EEPROM_Read16(unsigned char address) {
   unsigned int result;
 
