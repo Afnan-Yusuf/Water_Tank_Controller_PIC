@@ -43,6 +43,9 @@
 volatile unsigned long seconds_counter = 0;
 unsigned long lastdryruncheck = 0;
 unsigned long motorstarttime = 0;
+unsigned long lastvoltageerror = 0;
+unsigned int maxvoltageerrortime = ;
+
 
 unsigned int minvoltagelimit = 1160;
 unsigned int maxvoltagelimit = 255;
@@ -246,6 +249,13 @@ void main(void) {
         motorrunning = false;
     }
     if(voltageerror){
+        if(lastvoltageerror ==0){
+            lastvoltageerror = seconds_counter;
+        }else if(seconds_counter - lastvoltageerror >= maxvoltageerrortime){
+            voltageerror = false;
+            lastvoltageerror = 0;
+        }
+        }
         motorrunning = false;
     }
     if(!motorrunning){
