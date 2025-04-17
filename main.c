@@ -82,11 +82,11 @@ bool taknkfull = false;
 bool waterreached = false;
 
 
-static unsigned int buzzer_start_time = 0;
-static unsigned int buzzer_duration = 0;
+unsigned long buzzer_start_time = 0;
+unsigned int buzzer_duration = 0;
 bool buzzer_active = 0;
 
-void buzzer_beep(unsigned int duration_seconds);
+void trigger_buzzer(unsigned int duration_seconds);
 void EEPROM_Write(unsigned char address, unsigned char data);
 unsigned char EEPROM_Read(unsigned char address);
 void EEPROM_Write16(unsigned char address, unsigned int data);
@@ -100,6 +100,7 @@ void __interrupt() timer_isr(void);
 bool getSensorResults(bool *low_active, bool *high_active, bool *flow_active);
 void startSensorReading(void);
 void setupTimer0(void);
+void buzzer_update();
 
 void main(void) {
 
@@ -154,6 +155,7 @@ void main(void) {
     __delay_ms(1000);
   }
   while (1) {
+    buzzer_update();
 
     for (uint8_t i = 0; i < voltagesamples; i++) {
       voltagesum += readADC(voltagechannel);
@@ -261,7 +263,7 @@ void main(void) {
             voltageerror = false;
             lastvoltageerror = 0;
         }
-        }
+        
         motorrunning = false;
     }
     if(!motorrunning){
@@ -270,10 +272,8 @@ void main(void) {
     }else{
         MOTOR_ON_LED = 1;
         RELAY_MOTOR = 1;
-        if(seconds_counter % 10 == 0){
-            BUZZER = 1;
-            __delay_ms(300);
-            BUZZER = 0;
+        if(seconds_counter % 30 == 0){
+            trigger_buzzer(1);
         }
     }
 
@@ -469,18 +469,19 @@ void saveSettings(unsigned char value8bit, unsigned int value16bit1,
   EEPROM_Write(ADDR_SIGNATURE, EEPROM_SIGNATURE);
 }
 
-void buzzer_beep(unsigned int duration_seconds) {
+void trigger_buzzer(unsigned int duration_seconds) {
     if (!buzzer_active) {
-        // Start the buzzer
         BUZZER = 1;
         buzzer_start_time = seconds_counter;
         buzzer_duration = duration_seconds;
         buzzer_active = 1;
     }
+}
 
-    // Check if time is up
+void buzzer_update() {
     if (buzzer_active && (seconds_counter - buzzer_start_time >= buzzer_duration)) {
-        BUZZER = 0; // Turn off buzzer
+        BUZZER = 0;
         buzzer_active = 0;
+        buzzer_duration = 0;
     }
 }
