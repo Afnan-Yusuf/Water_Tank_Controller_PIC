@@ -29,13 +29,13 @@
 #define MOTOR_ON_LED PORTAbits.RA1      // Pin 3
 #define DRY_RUN_LED PORTAbits.RA2       // Pin 4
 #define VOLTAGE_ALERT_LED PORTAbits.RA4 // Pin 6
-#define RELAY_STARTER PORTCbits.RC2 // Pin 13
-#define RELAY_MOTOR PORTCbits.RC3   // Pin 14 (combines phase and neutral)
-#define BUZZER PORTCbits.RC4 // Pin 15
+#define RELAY_STARTER PORTCbits.RC2     // Pin 13
+#define RELAY_MOTOR PORTCbits.RC3       // Pin 14 (combines phase and neutral)
+#define BUZZER PORTCbits.RC4            // Pin 15
 
 #define voltagechannel 3
 #define dryrunpotchannel 4
-#define PUSHBUTTON PORTCbits.RC1 // Pin 12
+#define PUSHBUTTON PORTCbits.RC1      // Pin 12
 #define LOW_SENSOR_PIN PORTBbits.RB5  // Pin 24
 #define HIGH_SENSOR_PIN PORTBbits.RB4 // Pin 25
 #define FLOW_SENSOR_PIN PORTBbits.RB3 // Pin 26
@@ -45,7 +45,6 @@ unsigned long lastdryruncheck = 0;
 unsigned long motorstarttime = 0;
 unsigned long lastvoltageerror = 0;
 unsigned int maxvoltageerrortime = 10;
-
 
 unsigned int minvoltagelimit = 1160;
 unsigned int maxvoltagelimit = 255;
@@ -81,18 +80,22 @@ bool tankempty = false;
 bool taknkfull = false;
 bool waterreached = false;
 
-
 unsigned long buzzer_start_time = 0;
 unsigned int buzzer_duration = 0;
 bool buzzer_active = 0;
 
+bool check_button_press(void);
 void trigger_buzzer(unsigned int duration_seconds);
 void EEPROM_Write(unsigned char address, unsigned char data);
 unsigned char EEPROM_Read(unsigned char address);
 void EEPROM_Write16(unsigned char address, unsigned int data);
 unsigned int EEPROM_Read16(unsigned char address);
-bool loadSettings(unsigned char *value8bit, unsigned int *value16bit1, unsigned int *value16bit2, unsigned int *value16bit3, unsigned int *value16bit4);
-void saveSettings(unsigned char value8bit, unsigned int value16bit1, unsigned int value16bit2, unsigned int value16bit3, unsigned int value16bit4);
+bool loadSettings(unsigned char *value8bit, unsigned int *value16bit1,
+                  unsigned int *value16bit2, unsigned int *value16bit3,
+                  unsigned int *value16bit4);
+void saveSettings(unsigned char value8bit, unsigned int value16bit1,
+                  unsigned int value16bit2, unsigned int value16bit3,
+                  unsigned int value16bit4);
 void initSystem(void);
 unsigned int readADC(uint8_t channel);
 void init_timer(void);
@@ -155,6 +158,18 @@ void main(void) {
     __delay_ms(1000);
   }
   while (1) {
+
+    if (PUSHBUTTON == 0) {
+      bool is_long_press = check_button_press();
+
+      if (is_long_press) {
+
+        trigger_buzzer(1); // Confirmation beep
+      } else {
+        DRY_RUN_LED = ~DRY_RUN_LED; // Toggle LED
+      }
+    }
+
     buzzer_update();
 
     for (uint8_t i = 0; i < voltagesamples; i++) {
@@ -227,7 +242,8 @@ void main(void) {
           waterreached = true;
         }
 
-        if(voltage > maximumrinningvoltage || voltage < minimumrunningvoltage){
+        if (voltage > maximumrinningvoltage ||
+            voltage < minimumrunningvoltage) {
           voltageerror = true;
         }
 
@@ -240,51 +256,47 @@ void main(void) {
             DRY_RUN_LED = 0;
           }
         }
-
-
       }
-    }else{
-        if(motorrunning){
-            motorrunning = false;
-            RELAY_MOTOR = 0;
-            
-        }
-    }
-    if(timeouterror){
+    } else {
+      if (motorrunning) {
         motorrunning = false;
-    }
-    if(dryrunerror){
-        motorrunning = false;
-    }
-    if(voltageerror){
-        if(lastvoltageerror ==0){
-            lastvoltageerror = seconds_counter;
-        }else if(seconds_counter - lastvoltageerror >= maxvoltageerrortime){
-            voltageerror = false;
-            lastvoltageerror = 0;
-        }
-        
-        motorrunning = false;
-    }
-    if(!motorrunning){
         RELAY_MOTOR = 0;
-        MOTOR_ON_LED = 0;
-    }else{
-        MOTOR_ON_LED = 1;
-        RELAY_MOTOR = 1;
-        if(seconds_counter % 30 == 0){
-            trigger_buzzer(1);
-        }
+      }
     }
+    if (timeouterror) {
+      motorrunning = false;
+    }
+    if (dryrunerror) {
+      motorrunning = false;
+    }
+    if (voltageerror) {
+      if (lastvoltageerror == 0) {
+        lastvoltageerror = seconds_counter;
+      } else if (seconds_counter - lastvoltageerror >= maxvoltageerrortime) {
+        voltageerror = false;
+        lastvoltageerror = 0;
+      }
 
+      motorrunning = false;
+    }
+    if (!motorrunning) {
+      RELAY_MOTOR = 0;
+      MOTOR_ON_LED = 0;
+    } else {
+      MOTOR_ON_LED = 1;
+      RELAY_MOTOR = 1;
+      if (seconds_counter % 30 == 0) {
+        trigger_buzzer(1);
+      }
+    }
   }
 }
 
 void initSystem(void) {
   // Configure oscillator
-  OSCCONbits.IRCF = 0b110; 
-  ANSEL = 0b00011000; 
-  ANSELH = 0x00;      
+  OSCCONbits.IRCF = 0b110;
+  ANSEL = 0b00011000;
+  ANSELH = 0x00;
   TRISA = 0b11101000;
   TRISB = 0b00111000;
   TRISC = 0b00000011;
@@ -404,7 +416,8 @@ void init_timer(void) {
 }
 
 void EEPROM_Write(unsigned char address, unsigned char data) {
-  while (EECON1bits.WR);
+  while (EECON1bits.WR)
+    ;
 
   EEADR = address;
   EEDATA = data;
@@ -417,14 +430,16 @@ void EEPROM_Write(unsigned char address, unsigned char data) {
   EECON2 = 0xAA;
   EECON1bits.WR = 1; // Start write
 
-  while (EECON1bits.WR);
+  while (EECON1bits.WR)
+    ;
 
   EECON1bits.WREN = 0; // Disable writes
   INTCONbits.GIE = 1;  // Enable interrupts if they were enabled before
 }
 
 unsigned char EEPROM_Read(unsigned char address) {
-  while (EECON1bits.WR);
+  while (EECON1bits.WR)
+    ;
   EEADR = address;
   EECON1bits.EEPGD = 0; // Select EEPROM data memory
   EECON1bits.RD = 1;    // Initiate read
@@ -470,18 +485,69 @@ void saveSettings(unsigned char value8bit, unsigned int value16bit1,
 }
 
 void trigger_buzzer(unsigned int duration_seconds) {
-    if (!buzzer_active) {
-        BUZZER = 1;
-        buzzer_start_time = seconds_counter;
-        buzzer_duration = duration_seconds;
-        buzzer_active = 1;
-    }
+  if (!buzzer_active) {
+    BUZZER = 1;
+    buzzer_start_time = seconds_counter;
+    buzzer_duration = duration_seconds;
+    buzzer_active = 1;
+  }
 }
 
 void buzzer_update() {
-    if (buzzer_active && (seconds_counter - buzzer_start_time >= buzzer_duration)) {
-        BUZZER = 0;
-        buzzer_active = 0;
-        buzzer_duration = 0;
+  if (buzzer_active &&
+      (seconds_counter - buzzer_start_time >= buzzer_duration)) {
+    BUZZER = 0;
+    buzzer_active = 0;
+    buzzer_duration = 0;
+  }
+}
+
+bool check_button_press(void) {
+  bool long_press = false;
+
+  // Wait for button press
+  if (PUSHBUTTON == 0) {
+    // Button is pressed, debounce
+    __delay_ms(50);
+
+    // Check if still pressed after debounce
+    if (PUSHBUTTON == 0) {
+      // Count how long the button is held
+      unsigned int hold_count = 0;
+      unsigned int long_press_threshold = 20; // 3 seconds (300 * 10ms)
+
+      // Wait for button release or timeout
+      while (PUSHBUTTON == 0) {
+        __delay_ms(10);
+        hold_count++;
+
+        // Check for long press (3 seconds)
+        if (hold_count >= long_press_threshold) {
+          long_press = true;
+
+          // Signal long press detected (e.g., with LED)
+
+          // Wait for button release
+          while (PUSHBUTTON == 0) {
+            __delay_ms(10);
+          }
+
+          // Debounce release
+          __delay_ms(50);
+          break;
+        }
+      }
+
+      // If not a long press, it was a short press
+      if (!long_press) {
+        // Debounce release
+        __delay_ms(50);
+        return false; // Short press
+      }
+
+      return true; // Long press
     }
+  }
+
+  return false; // No press
 }
