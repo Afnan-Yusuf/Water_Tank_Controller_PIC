@@ -72,13 +72,20 @@ volatile uint8_t flow_sensor_high_count = 0;
 volatile bool sensors_reading_complete = false;
 volatile bool sensors_reading_in_progress = false;
 
+bool low_sensor_active, high_sensor_active, flow_sensor_active;
+bool mannualon = false;
 bool voltageerror = false;
 bool dryrunerror = false;
 bool timeouterror = false;
 bool motorrunning = false;
 bool tankempty = false;
-bool taknkfull = false;
 bool waterreached = false;
+bool pretankempty = false;
+bool flowactive = false;
+bool preflowactive = false;
+unsigned int sensorbuffer = 10;
+unsigned int lastflowcheck = 0;
+unsigned long lastsensorcheck = 0;
 
 unsigned long buzzer_start_time = 0;
 unsigned int buzzer_duration = 0;
@@ -163,8 +170,9 @@ void main(void) {
       bool is_long_press = check_button_press();
 
       if (is_long_press) {
-
-        trigger_buzzer(1); // Confirmation beep
+        tankempty = true;
+        pretankempty = true;
+        //trigger_buzzer(1); // Confirmation beep
       } else {
         DRY_RUN_LED = ~DRY_RUN_LED; // Toggle LED
       }
@@ -192,32 +200,43 @@ void main(void) {
       setupTimer0(); // Set up and enable Timer0 for readings
       startSensorReading();
     }
-    bool low_sensor_active, high_sensor_active, flow_sensor_active;
+    
     if (getSensorResults(&low_sensor_active, &high_sensor_active,
                          &flow_sensor_active)) {
-      /*
-      if(high_sensor_active) {
-          MAINS_LED = 1;
-      }else{
-          MAINS_LED = 0;
-      }
 
-      if(low_sensor_active) {
-          DRY_RUN_LED = 1;
-      }else{
-          DRY_RUN_LED = 0;
-      }
-      */
-
-      if (low_sensor_active && high_sensor_active) {
-        // VOLTAGE_ALERT_LED = 1;
-        tankempty = false;
+      if (high_sensor_active) {
+        VOLTAGE_ALERT_LED = 1;
+        pretankempty = false;
       }
       if (!low_sensor_active && !high_sensor_active) {
-        // VOLTAGE_ALERT_LED = 0;
-        tankempty = true;
+        VOLTAGE_ALERT_LED = 0;
+        pretankempty = true;
       }
+      
     }
+
+    if(pretankempty !=tankempty){
+      if(lastsensorcheck == 0){
+        lastsensorcheck = seconds_counter;
+      }else if(seconds_counter - lastsensorcheck >= sensorbuffer){
+        lastsensorcheck = 0;
+        tankempty = pretankempty;
+      }
+    }else if (lastsensorcheck != 0 && (seconds_counter - lastsensorcheck >= sensorbuffer)){
+      lastsensorcheck = 0;
+    } 
+
+    if(flow_sensor_active != flowactive){
+        if (lastflowcheck == 0) {
+          lastflowcheck = seconds_counter;
+        } else if (seconds_counter - lastflowcheck >= sensorbuffer) {
+          lastflowcheck = 0;
+          flowactive = flow_sensor_active;
+        }
+      }else if(lastflowcheck != 0 &&(seconds_counter - lastflowcheck >= sensorbuffer)){
+        lastflowcheck = 0;
+      }
+
 
     if (tankempty) {
       if (!timeouterror && !voltageerror && !dryrunerror && !motorrunning) {
@@ -230,7 +249,7 @@ void main(void) {
         if (seconds_counter - motorstarttime >= maxruntime[4]) {
           timeouterror = true;
         }
-        if (!flow_sensor_active) {
+        if (!flowactive) {
           waterreached = false;
           if (lastdryruncheck == 0) {
             lastdryruncheck = seconds_counter;
@@ -242,8 +261,7 @@ void main(void) {
           waterreached = true;
         }
 
-        if (voltage > maximumrinningvoltage ||
-            voltage < minimumrunningvoltage) {
+        if (voltage > maximumrinningvoltage || voltage < minimumrunningvoltage) {
           voltageerror = true;
         }
 
@@ -260,6 +278,7 @@ void main(void) {
     } else {
       if (motorrunning) {
         motorrunning = false;
+        mannualon = false;
         RELAY_MOTOR = 0;
       }
     }
