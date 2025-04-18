@@ -41,6 +41,9 @@
 #define FLOW_SENSOR_PIN PORTBbits.RB3 // Pin 26
 
 volatile unsigned long seconds_counter = 0;
+volatile unsigned long millis = 0;
+unsigned long last_millis = 0;
+
 unsigned long lastdryruncheck = 0;
 unsigned long motorstarttime = 0;
 unsigned long lastvoltageerror = 0;
@@ -131,6 +134,7 @@ void main(void) {
   }
   potraw = readADC(dryrunpotchannel);
   dryruntime = (((uint32_t)potraw * 360) / 1023) + 120;
+  /*
   for (uint8_t i = 0; i < 10; i++) {
     MAINS_LED = 1;
     MOTOR_ON_LED = 1;
@@ -155,6 +159,7 @@ void main(void) {
     VOLTAGE_ALERT_LED = 0;
     __delay_ms(1000);
   }
+  */
   init_timer();
 
   while (settingsmode) {
@@ -302,8 +307,14 @@ void main(void) {
       MOTOR_ON_LED = 1;
       RELAY_MOTOR = 1;
       if (seconds_counter % 30 == 0) {
-        trigger_buzzer(1);
+        trigger_buzzer(500);
       }
+    }
+
+
+    if ((millis - last_millis) >= 1000) {
+        seconds_counter ++;
+        last_millis = millis;  // keep in sync, avoids drift
     }
   }
 }
@@ -379,15 +390,10 @@ bool getSensorResults(bool *low_active, bool *high_active, bool *flow_active) {
 void __interrupt() isr(void) {
   // Timer1 interrupt handler (your existing code)
   if (PIR1bits.TMR1IF) {
-    if (to == 0) {
-      seconds_counter++;
-      to = 1;
-    } else {
-      to = 0;
-    }
+    millis ++;
     PIR1bits.TMR1IF = 0; // Clear interrupt flag
-    TMR1H = 0x12;        // Reload Timer1
-    TMR1L = 0x38;
+    TMR1H = 255;        // Reload Timer1
+    TMR1L = 131;
   }
 
   if (INTCONbits.TMR0IF) {
@@ -421,8 +427,8 @@ void __interrupt() isr(void) {
 void init_timer(void) {
   T1CON = 0b00110000;
 
-  TMR1H = 0x12; // High byte of 49911
-  TMR1L = 0x38; // Low byte of 49911
+  TMR1H = 255; // High byte of 49911
+  TMR1L = 131; // Low byte of 49911
 
   PIE1bits.TMR1IE = 1; // Enable Timer1 interrupt
   INTCONbits.PEIE = 1; // Enable peripheral interrupts
@@ -503,7 +509,7 @@ void saveSettings(unsigned char value8bit, unsigned int value16bit1,
 void trigger_buzzer(unsigned int duration_seconds) {
   if (!buzzer_active) {
     BUZZER = 1;
-    buzzer_start_time = seconds_counter;
+    buzzer_start_time = millis;
     buzzer_duration = duration_seconds;
     buzzer_active = 1;
   }
@@ -511,7 +517,7 @@ void trigger_buzzer(unsigned int duration_seconds) {
 
 void buzzer_update() {
   if (buzzer_active &&
-      (seconds_counter - buzzer_start_time >= buzzer_duration)) {
+      (millis - buzzer_start_time >= buzzer_duration)) {
     BUZZER = 0;
     buzzer_active = 0;
     buzzer_duration = 0;
