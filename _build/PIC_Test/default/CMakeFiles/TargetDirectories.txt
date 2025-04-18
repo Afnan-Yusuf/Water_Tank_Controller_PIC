@@ -1,0 +1,4 @@
+/home/afnan/MPLABXProjects/PIC_Test.X/_build/PIC_Test/default/CMakeFiles/PIC_Test_default_default_XC8_compile.dir
+/home/afnan/MPLABXProjects/PIC_Test.X/_build/PIC_Test/default/CMakeFiles/PIC_Test_default_default.elf.dir
+/home/afnan/MPLABXProjects/PIC_Test.X/_build/PIC_Test/default/CMakeFiles/edit_cache.dir
+/home/afnan/MPLABXProjects/PIC_Test.X/_build/PIC_Test/default/CMakeFiles/rebuild_cache.dir

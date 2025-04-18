@@ -79,7 +79,6 @@ bool dryrunerror = false;
 bool timeouterror = false;
 bool motorrunning = false;
 bool tankempty = false;
-bool waterreached = false;
 bool pretankempty = false;
 bool flowactive = false;
 bool preflowactive = false;
@@ -250,22 +249,6 @@ void main(void) {
           timeouterror = true;
         }
         if (!flowactive) {
-          waterreached = false;
-          if (lastdryruncheck == 0) {
-            lastdryruncheck = seconds_counter;
-          } else if (seconds_counter - lastdryruncheck >= dryruntime) {
-            dryrunerror = true;
-          }
-        } else {
-          lastdryruncheck = 0;
-          waterreached = true;
-        }
-
-        if (voltage > maximumrinningvoltage || voltage < minimumrunningvoltage) {
-          voltageerror = true;
-        }
-
-        if (!waterreached) {
           if (seconds_counter % 2 == 0) {
             // Even second - turn ON
             DRY_RUN_LED = 1;
@@ -273,7 +256,21 @@ void main(void) {
             // Odd second - turn OFF
             DRY_RUN_LED = 0;
           }
+          if (lastdryruncheck == 0) {
+            lastdryruncheck = seconds_counter;
+          } else if (seconds_counter - lastdryruncheck >= dryruntime) {
+            dryrunerror = true;
+          }
+        } else {
+          lastdryruncheck = 0;
+          DRY_RUN_LED = 0;
         }
+
+        if (voltage > maximumrinningvoltage || voltage < minimumrunningvoltage) {
+          voltageerror = true;
+        }
+
+        
       }
     } else {
       if (motorrunning) {
