@@ -15,7 +15,7 @@
 #pragma config FCMEN = OFF           // Fail-Safe Clock Monitor disabled
 #pragma config LVP = OFF             // Low-Voltage Programming disabled
 
-#define _XTAL_FREQ 4000000 // 4 MHz internal oscillator
+#define _XTAL_FREQ 8000000 // 4 MHz internal oscillator
 
 #define ADDR_SIGNATURE 0x00    // 1 byte signature (0xAA)
 #define ADDR_TIMOUT_INDEX 0x01 // 1 byte
@@ -85,13 +85,15 @@ bool tankempty = false;
 bool pretankempty = false;
 bool flowactive = false;
 bool preflowactive = false;
-unsigned int sensorbuffer = 10;
+unsigned int sensorbuffer = 10000;
 unsigned int lastflowcheck = 0;
 unsigned long lastsensorcheck = 0;
 
 unsigned long buzzer_start_time = 0;
 unsigned int buzzer_duration = 0;
 bool buzzer_active = 0;
+
+unsigned long lt = 0;
 
 bool check_button_press(void);
 void trigger_buzzer(unsigned int duration_seconds);
@@ -160,6 +162,9 @@ void main(void) {
     __delay_ms(1000);
   }
   */
+  trigger_buzzer(100);
+  buzzer_update();
+  
   init_timer();
 
   while (settingsmode) {
@@ -191,13 +196,8 @@ void main(void) {
     voltagesum = 0;
     voltage = (((uint32_t)voltageraw * 235) / 1023) + 85;
 
-    if (seconds_counter % 2 == 0) {
-      // Even second - turn ON
-      MAINS_LED = 1;
-    } else {
-      // Odd second - turn OFF
-      MAINS_LED = 0;
-    }
+    
+     
 
     if (seconds_counter % 1 == 0 && !sensors_reading_in_progress &&
         !sensors_reading_complete) {
@@ -221,23 +221,23 @@ void main(void) {
 
     if(pretankempty !=tankempty){
       if(lastsensorcheck == 0){
-        lastsensorcheck = seconds_counter;
-      }else if(seconds_counter - lastsensorcheck >= sensorbuffer){
+        lastsensorcheck = millis;
+      }else if(millis - lastsensorcheck >= sensorbuffer){
         lastsensorcheck = 0;
         tankempty = pretankempty;
       }
-    }else if (lastsensorcheck != 0 && (seconds_counter - lastsensorcheck >= sensorbuffer)){
+    }else if (lastsensorcheck != 0 && (millis - lastsensorcheck >= sensorbuffer)){
       lastsensorcheck = 0;
     } 
 
     if(flow_sensor_active != flowactive){
         if (lastflowcheck == 0) {
-          lastflowcheck = seconds_counter;
-        } else if (seconds_counter - lastflowcheck >= sensorbuffer) {
+          lastflowcheck = millis;
+        } else if (millis - lastflowcheck >= sensorbuffer) {
           lastflowcheck = 0;
           flowactive = flow_sensor_active;
         }
-      }else if(lastflowcheck != 0 &&(seconds_counter - lastflowcheck >= sensorbuffer)){
+      }else if(lastflowcheck != 0 &&(millis - lastflowcheck >= sensorbuffer)){
         lastflowcheck = 0;
       }
 
@@ -248,6 +248,7 @@ void main(void) {
         RELAY_MOTOR = 1;
         motorstarttime = seconds_counter;
         motorrunning = true;
+        trigger_buzzer(1000);
       }
       if (motorrunning) {
         if (seconds_counter - motorstarttime >= maxruntime[4]) {
@@ -306,22 +307,24 @@ void main(void) {
     } else {
       MOTOR_ON_LED = 1;
       RELAY_MOTOR = 1;
-      if (seconds_counter % 30 == 0) {
-        trigger_buzzer(500);
-      }
+      if (millis - lt >= 20000) {
+        lt = millis;
+
+        trigger_buzzer(200);     
+    }
     }
 
 
     if ((millis - last_millis) >= 1000) {
         seconds_counter ++;
-        last_millis = millis;  // keep in sync, avoids drift
+        last_millis = millis;
     }
   }
 }
 
 void initSystem(void) {
   // Configure oscillator
-  OSCCONbits.IRCF = 0b110;
+  OSCCONbits.IRCF = 0b111;  // 8 MHz
   ANSEL = 0b00011000;
   ANSELH = 0x00;
   TRISA = 0b11101000;
@@ -354,7 +357,8 @@ unsigned int readADC(uint8_t channel) {
 void setupTimer0(void) {
   OPTION_REGbits.T0CS = 0;   // Use internal instruction cycle clock (FOSC/4)
   OPTION_REGbits.PSA = 0;    // Prescaler is assigned to Timer0
-  OPTION_REGbits.PS = 0b010; // Set prescaler to 1:8
+  OPTION_REGbits.PS = 0b011;
+
 
   // 4MHz / 4 = 1MHz instruction clock
   // 1MHz / 8 = 125kHz timer increment
@@ -393,7 +397,7 @@ void __interrupt() isr(void) {
     millis ++;
     PIR1bits.TMR1IF = 0; // Clear interrupt flag
     TMR1H = 255;        // Reload Timer1
-    TMR1L = 131;
+    TMR1L = 14;
   }
 
   if (INTCONbits.TMR0IF) {
@@ -428,7 +432,7 @@ void init_timer(void) {
   T1CON = 0b00110000;
 
   TMR1H = 255; // High byte of 49911
-  TMR1L = 131; // Low byte of 49911
+  TMR1L = 14; // Low byte of 49911
 
   PIE1bits.TMR1IE = 1; // Enable Timer1 interrupt
   INTCONbits.PEIE = 1; // Enable peripheral interrupts
