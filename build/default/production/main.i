@@ -2573,13 +2573,16 @@ extern __bank0 __bit __timeout;
 #pragma config LVP = OFF
 # 43 "main.c"
 volatile unsigned long seconds_counter = 0;
+volatile unsigned long millis = 0;
+unsigned long last_millis = 0;
+
 unsigned long lastdryruncheck = 0;
 unsigned long motorstarttime = 0;
 unsigned long lastvoltageerror = 0;
 unsigned int maxvoltageerrortime = 10;
 
-unsigned int minvoltagelimit = 1160;
-unsigned int maxvoltagelimit = 255;
+unsigned int minvoltagelimit = 200;
+unsigned int maxvoltagelimit = 230;
 unsigned int minimumrunningvoltage = 170;
 unsigned int maximumrinningvoltage = 285;
 
@@ -2611,17 +2614,18 @@ _Bool dryrunerror = 0;
 _Bool timeouterror = 0;
 _Bool motorrunning = 0;
 _Bool tankempty = 0;
-_Bool waterreached = 0;
 _Bool pretankempty = 0;
 _Bool flowactive = 0;
 _Bool preflowactive = 0;
-unsigned int sensorbuffer = 10;
+unsigned int sensorbuffer = 10000;
 unsigned int lastflowcheck = 0;
 unsigned long lastsensorcheck = 0;
 
 unsigned long buzzer_start_time = 0;
 unsigned int buzzer_duration = 0;
 _Bool buzzer_active = 0;
+
+unsigned long lt = 0;
 
 _Bool check_button_press(void);
 void trigger_buzzer(unsigned int duration_seconds);
@@ -2653,7 +2657,7 @@ void main(void) {
                     &minimumrunningvoltage, &maximumrinningvoltage)) {
 
     maxruntimeindex = 0;
-    minvoltagelimit = 1160;
+    minvoltagelimit = 150;
     maxvoltagelimit = 255;
     minimumrunningvoltage = 170;
     maximumrinningvoltage = 285;
@@ -2663,38 +2667,19 @@ void main(void) {
                  minimumrunningvoltage, maximumrinningvoltage);
   }
   potraw = readADC(4);
-  dryruntime = (((uint32_t)potraw * 360) / 1023) + 120;
-  for (uint8_t i = 0; i < 10; i++) {
-    PORTAbits.RA0 = 1;
-    PORTAbits.RA1 = 1;
-    PORTAbits.RA2 = 1;
-    PORTAbits.RA4 = 1;
-    if (i == 0) {
-      if (PORTCbits.RC1 == 0) {
-        smc = 1;
-      }
-    } else if (i == 3) {
-      if (smc == 1) {
-        if (PORTCbits.RC1 == 0) {
-          settingsmode = 1;
-          i = 10;
-        }
-      }
-    }
-    _delay((unsigned long)((1000)*(4000000/4000.0)));
-    PORTAbits.RA0 = 0;
-    PORTAbits.RA1 = 0;
-    PORTAbits.RA2 = 0;
-    PORTAbits.RA4 = 0;
-    _delay((unsigned long)((1000)*(4000000/4000.0)));
-  }
+
+  dryruntime = 1000 *(((uint32_t)potraw * 360) / 1023) + 120;
+# 166 "main.c"
+  trigger_buzzer(3000);
+  buzzer_update();
+
   init_timer();
 
   while (settingsmode) {
     PORTAbits.RA0 = 0;
-    _delay((unsigned long)((1000)*(4000000/4000.0)));
+    _delay((unsigned long)((1000)*(8000000/4000.0)));
     PORTAbits.RA0 = 1;
-    _delay((unsigned long)((1000)*(4000000/4000.0)));
+    _delay((unsigned long)((1000)*(8000000/4000.0)));
   }
   while (1) {
 
@@ -2719,29 +2704,26 @@ void main(void) {
     voltagesum = 0;
     voltage = (((uint32_t)voltageraw * 235) / 1023) + 85;
 
-    if (seconds_counter % 2 == 0) {
 
-      PORTAbits.RA0 = 1;
-    } else {
-
-      PORTAbits.RA0 = 0;
+    if(voltage < minvoltagelimit){
+      if(seconds_counter %2 ==0){
+        PORTAbits.RA4 = ~PORTAbits.RA4;
+      }
     }
 
-    if (seconds_counter % 1 == 0 && !sensors_reading_in_progress &&
-        !sensors_reading_complete) {
+    if (seconds_counter % 1 == 0 && !sensors_reading_in_progress && !sensors_reading_complete) {
       setupTimer0();
       startSensorReading();
     }
 
-    if (getSensorResults(&low_sensor_active, &high_sensor_active,
-                         &flow_sensor_active)) {
+    if (getSensorResults(&low_sensor_active, &high_sensor_active, &flow_sensor_active)) {
 
       if (high_sensor_active) {
-        PORTAbits.RA4 = 1;
+
         pretankempty = 0;
       }
       if (!low_sensor_active && !high_sensor_active) {
-        PORTAbits.RA4 = 0;
+
         pretankempty = 1;
       }
 
@@ -2749,23 +2731,23 @@ void main(void) {
 
     if(pretankempty !=tankempty){
       if(lastsensorcheck == 0){
-        lastsensorcheck = seconds_counter;
-      }else if(seconds_counter - lastsensorcheck >= sensorbuffer){
+        lastsensorcheck = millis;
+      }else if(millis - lastsensorcheck >= sensorbuffer){
         lastsensorcheck = 0;
         tankempty = pretankempty;
       }
-    }else if (lastsensorcheck != 0 && (seconds_counter - lastsensorcheck >= sensorbuffer)){
+    }else if (lastsensorcheck != 0 && (millis - lastsensorcheck >= sensorbuffer)){
       lastsensorcheck = 0;
     }
 
     if(flow_sensor_active != flowactive){
         if (lastflowcheck == 0) {
-          lastflowcheck = seconds_counter;
-        } else if (seconds_counter - lastflowcheck >= sensorbuffer) {
+          lastflowcheck = millis;
+        } else if (millis - lastflowcheck >= sensorbuffer) {
           lastflowcheck = 0;
           flowactive = flow_sensor_active;
         }
-      }else if(lastflowcheck != 0 &&(seconds_counter - lastflowcheck >= sensorbuffer)){
+      }else if(lastflowcheck != 0 &&(millis - lastflowcheck >= sensorbuffer)){
         lastflowcheck = 0;
       }
 
@@ -2776,6 +2758,7 @@ void main(void) {
         PORTCbits.RC3 = 1;
         motorstarttime = seconds_counter;
         motorrunning = 1;
+        trigger_buzzer(1000);
       }
       if (motorrunning) {
         if (seconds_counter - motorstarttime >= maxruntime[4]) {
@@ -2789,21 +2772,20 @@ void main(void) {
 
             PORTAbits.RA2 = 0;
           }
-
           if (lastdryruncheck == 0) {
-            lastdryruncheck = seconds_counter;
-          } else if (seconds_counter - lastdryruncheck >= dryruntime) {
+            lastdryruncheck = millis;
+          } else if (millis - lastdryruncheck >= dryruntime) {
             dryrunerror = 1;
+            PORTAbits.RA2 = 1;
           }
         } else {
           lastdryruncheck = 0;
-          waterreached = 1;
           PORTAbits.RA2 = 0;
         }
 
-        if (voltage > maximumrinningvoltage || voltage < minimumrunningvoltage) {
-          voltageerror = 1;
-        }
+
+
+
 
 
       }
@@ -2829,23 +2811,36 @@ void main(void) {
       }
 
       motorrunning = 0;
+    }else if (lastvoltageerror !=0 && (seconds_counter - lastvoltageerror >= maxvoltageerrortime)){
+      lastvoltageerror = 0;
     }
     if (!motorrunning) {
+      if (voltage > maxvoltagelimit || voltage < minvoltagelimit) {
+          voltageerror = 1;
+        }
       PORTCbits.RC3 = 0;
       PORTAbits.RA1 = 0;
     } else {
       PORTAbits.RA1 = 1;
       PORTCbits.RC3 = 1;
-      if (seconds_counter % 30 == 0) {
-        trigger_buzzer(1);
-      }
+      if (millis - lt >= 20000) {
+        lt = millis;
+
+        trigger_buzzer(200);
+    }
+    }
+
+
+    if ((millis - last_millis) >= 1000) {
+        seconds_counter ++;
+        last_millis = millis;
     }
   }
 }
 
 void initSystem(void) {
 
-  OSCCONbits.IRCF = 0b110;
+  OSCCONbits.IRCF = 0b111;
   ANSEL = 0b00011000;
   ANSELH = 0x00;
   TRISA = 0b11101000;
@@ -2855,7 +2850,7 @@ void initSystem(void) {
   ADCON0 = 0b00001101;
   ADCON1 = 0b10000000;
 
-  _delay((unsigned long)((10)*(4000000/4000.0)));
+  _delay((unsigned long)((10)*(8000000/4000.0)));
   PORTA = 0x00;
   PORTB = 0x00;
   PORTC = 0x00;
@@ -2864,7 +2859,7 @@ void initSystem(void) {
 unsigned int readADC(uint8_t channel) {
 
   ADCON0 = (ADCON0 & 0b11000011) | ((uint8_t)(channel << 2));
-  _delay((unsigned long)((10)*(4000000/4000000.0)));
+  _delay((unsigned long)((10)*(8000000/4000000.0)));
   ADCON0bits.GO = 1;
 
 
@@ -2878,7 +2873,8 @@ unsigned int readADC(uint8_t channel) {
 void setupTimer0(void) {
   OPTION_REGbits.T0CS = 0;
   OPTION_REGbits.PSA = 0;
-  OPTION_REGbits.PS = 0b010;
+  OPTION_REGbits.PS = 0b011;
+
 
 
 
@@ -2914,15 +2910,10 @@ _Bool getSensorResults(_Bool *low_active, _Bool *high_active, _Bool *flow_active
 void __attribute__((picinterrupt(("")))) isr(void) {
 
   if (PIR1bits.TMR1IF) {
-    if (to == 0) {
-      seconds_counter++;
-      to = 1;
-    } else {
-      to = 0;
-    }
+    millis ++;
     PIR1bits.TMR1IF = 0;
-    TMR1H = 0x12;
-    TMR1L = 0x38;
+    TMR1H = 255;
+    TMR1L = 14;
   }
 
   if (INTCONbits.TMR0IF) {
@@ -2956,8 +2947,8 @@ void __attribute__((picinterrupt(("")))) isr(void) {
 void init_timer(void) {
   T1CON = 0b00110000;
 
-  TMR1H = 0x12;
-  TMR1L = 0x38;
+  TMR1H = 255;
+  TMR1L = 14;
 
   PIE1bits.TMR1IE = 1;
   INTCONbits.PEIE = 1;
@@ -3038,7 +3029,7 @@ void saveSettings(unsigned char value8bit, unsigned int value16bit1,
 void trigger_buzzer(unsigned int duration_seconds) {
   if (!buzzer_active) {
     PORTCbits.RC4 = 1;
-    buzzer_start_time = seconds_counter;
+    buzzer_start_time = millis;
     buzzer_duration = duration_seconds;
     buzzer_active = 1;
   }
@@ -3046,7 +3037,7 @@ void trigger_buzzer(unsigned int duration_seconds) {
 
 void buzzer_update() {
   if (buzzer_active &&
-      (seconds_counter - buzzer_start_time >= buzzer_duration)) {
+      (millis - buzzer_start_time >= buzzer_duration)) {
     PORTCbits.RC4 = 0;
     buzzer_active = 0;
     buzzer_duration = 0;
@@ -3059,7 +3050,7 @@ _Bool check_button_press(void) {
 
   if (PORTCbits.RC1 == 0) {
 
-    _delay((unsigned long)((50)*(4000000/4000.0)));
+    _delay((unsigned long)((50)*(8000000/4000.0)));
 
 
     if (PORTCbits.RC1 == 0) {
@@ -3069,7 +3060,7 @@ _Bool check_button_press(void) {
 
 
       while (PORTCbits.RC1 == 0) {
-        _delay((unsigned long)((10)*(4000000/4000.0)));
+        _delay((unsigned long)((10)*(8000000/4000.0)));
         hold_count++;
 
 
@@ -3080,11 +3071,11 @@ _Bool check_button_press(void) {
 
 
           while (PORTCbits.RC1 == 0) {
-            _delay((unsigned long)((10)*(4000000/4000.0)));
+            _delay((unsigned long)((10)*(8000000/4000.0)));
           }
 
 
-          _delay((unsigned long)((50)*(4000000/4000.0)));
+          _delay((unsigned long)((50)*(8000000/4000.0)));
           break;
         }
       }
@@ -3092,7 +3083,7 @@ _Bool check_button_press(void) {
 
       if (!long_press) {
 
-        _delay((unsigned long)((50)*(4000000/4000.0)));
+        _delay((unsigned long)((50)*(8000000/4000.0)));
         return 0;
       }
 

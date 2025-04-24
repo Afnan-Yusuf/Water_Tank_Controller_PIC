@@ -49,8 +49,8 @@ unsigned long motorstarttime = 0;
 unsigned long lastvoltageerror = 0;
 unsigned int maxvoltageerrortime = 10;
 
-unsigned int minvoltagelimit = 1160;
-unsigned int maxvoltagelimit = 255;
+unsigned int minvoltagelimit = 200;
+unsigned int maxvoltagelimit = 230;
 unsigned int minimumrunningvoltage = 170;
 unsigned int maximumrinningvoltage = 285;
 
@@ -125,7 +125,7 @@ void main(void) {
                     &minimumrunningvoltage, &maximumrinningvoltage)) {
     // EEPROM wasn't properly initialized, set defaults
     maxruntimeindex = 0; // Default threshold
-    minvoltagelimit = 1160;
+    minvoltagelimit = 150;
     maxvoltagelimit = 255;
     minimumrunningvoltage = 170;
     maximumrinningvoltage = 285;
@@ -135,7 +135,8 @@ void main(void) {
                  minimumrunningvoltage, maximumrinningvoltage);
   }
   potraw = readADC(dryrunpotchannel);
-  dryruntime = (((uint32_t)potraw * 360) / 1023) + 120;
+  //dryruntime = 30000;
+  dryruntime = 1000 *(((uint32_t)potraw * 360) / 1023) + 120;
   /*
   for (uint8_t i = 0; i < 10; i++) {
     MAINS_LED = 1;
@@ -162,7 +163,7 @@ void main(void) {
     __delay_ms(1000);
   }
   */
-  trigger_buzzer(100);
+  trigger_buzzer(3000);
   buzzer_update();
   
   init_timer();
@@ -197,23 +198,25 @@ void main(void) {
     voltage = (((uint32_t)voltageraw * 235) / 1023) + 85;
 
     
-     
+    if(voltage < minvoltagelimit){
+      if(seconds_counter %2 ==0){
+        VOLTAGE_ALERT_LED = ~VOLTAGE_ALERT_LED;
+      }
+    }
 
-    if (seconds_counter % 1 == 0 && !sensors_reading_in_progress &&
-        !sensors_reading_complete) {
+    if (seconds_counter % 1 == 0 && !sensors_reading_in_progress && !sensors_reading_complete) {
       setupTimer0(); // Set up and enable Timer0 for readings
       startSensorReading();
     }
     
-    if (getSensorResults(&low_sensor_active, &high_sensor_active,
-                         &flow_sensor_active)) {
+    if (getSensorResults(&low_sensor_active, &high_sensor_active, &flow_sensor_active)) {
 
       if (high_sensor_active) {
-        VOLTAGE_ALERT_LED = 1;
+        //VOLTAGE_ALERT_LED = 1;
         pretankempty = false;
       }
       if (!low_sensor_active && !high_sensor_active) {
-        VOLTAGE_ALERT_LED = 0;
+        //VOLTAGE_ALERT_LED = 0;
         pretankempty = true;
       }
       
@@ -263,18 +266,19 @@ void main(void) {
             DRY_RUN_LED = 0;
           }
           if (lastdryruncheck == 0) {
-            lastdryruncheck = seconds_counter;
-          } else if (seconds_counter - lastdryruncheck >= dryruntime) {
+            lastdryruncheck = millis;
+          } else if (millis - lastdryruncheck >= dryruntime) {
             dryrunerror = true;
+            DRY_RUN_LED = 1;
           }
         } else {
           lastdryruncheck = 0;
           DRY_RUN_LED = 0;
         }
 
-        if (voltage > maximumrinningvoltage || voltage < minimumrunningvoltage) {
-          voltageerror = true;
-        }
+        // if (voltage > maximumrinningvoltage || voltage < minimumrunningvoltage) {
+        //   voltageerror = true;
+        // }
 
         
       }
@@ -300,8 +304,13 @@ void main(void) {
       }
 
       motorrunning = false;
+    }else if (lastvoltageerror !=0 && (seconds_counter - lastvoltageerror >= maxvoltageerrortime)){
+      lastvoltageerror = 0;
     }
     if (!motorrunning) {
+      if (voltage > maxvoltagelimit || voltage < minvoltagelimit) {
+          voltageerror = true;
+        }
       RELAY_MOTOR = 0;
       MOTOR_ON_LED = 0;
     } else {

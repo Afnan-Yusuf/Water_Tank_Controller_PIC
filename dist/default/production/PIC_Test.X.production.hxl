@@ -1,26 +1,26 @@
 ### HEXMate logfile and output summary ###
 
 ### Command-line arguments ###
- /tmp/xcXEgaChh/driver_tmp_3.o
+ /tmp/xcXFpFBKN/driver_tmp_3.o
  -Odist/default/production/PIC_Test.X.production.hex
  -logfile=dist/default/production/PIC_Test.X.production.hxl
  -addressing=2
 
 ### Memory Usage ###
  Input file ranges:
-  0h - 3h		(/tmp/xcXEgaChh/driver_tmp_3.o)
-  8h - FFFh		(/tmp/xcXEgaChh/driver_tmp_3.o)
-  1E34h - 1FFFh		(/tmp/xcXEgaChh/driver_tmp_3.o)
-  400Eh - 400Fh		(/tmp/xcXEgaChh/driver_tmp_3.o)
+  0h - 3h		(/tmp/xcXFpFBKN/driver_tmp_3.o)
+  8h - FFFh		(/tmp/xcXFpFBKN/driver_tmp_3.o)
+  1D8Eh - 1FFFh		(/tmp/xcXFpFBKN/driver_tmp_3.o)
+  400Eh - 400Fh		(/tmp/xcXFpFBKN/driver_tmp_3.o)
  Unused ranges:
   4h - 7h
-  1000h - 1E33h
+  1000h - 1D8Dh
   2000h - 400Dh
 
 ### Hex Memory Map ###
  Legend:
   -- = Unused memory
-  H1 = Input file             (/tmp/xcXEgaChh/driver_tmp_3.o)
+  H1 = Input file             (/tmp/xcXFpFBKN/driver_tmp_3.o)
 ----------------------------------------------------------
          | 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F
 ----------------------------------------------------------
@@ -281,7 +281,18 @@
 00000FE0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 00000FF0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 ----------------------------------------------------------
-00001E30 | -- -- -- -- H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
+00001D80 | -- -- -- -- -- -- -- -- -- -- -- -- -- -- H1 H1
+00001D90 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
+00001DA0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
+00001DB0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
+00001DC0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
+00001DD0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
+00001DE0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
+00001DF0 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
+00001E00 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
+00001E10 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
+00001E20 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
+00001E30 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 00001E40 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 00001E50 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
 00001E60 | H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1 H1
