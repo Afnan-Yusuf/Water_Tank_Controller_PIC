@@ -1,12 +1,14 @@
 {
     "importedFrom": "file:///home/afnan/MPLABXProjects/PIC_Test.X",
-    "version": "1.4",
+    "version": "1.3",
     "configurations": [
         {
             "name": "default",
             "id": "conf1",
+            "targetDevice": "PIC16F883",
             "imageType": "application",
             "imagePath": "./out/PIC_Test/default.elf",
+            "platformTool": "default-tool",
             "packs": [
                 {
                     "name": "PIC16Fxxx_DFP",
@@ -15,9 +17,7 @@
                 }
             ],
             "fileSet": "Project files",
-            "toolchain": "default-XC8",
-            "toolProperties": "default-tool",
-            "device": "PIC16F883"
+            "toolchain": "default-XC8"
         }
     ],
     "propertyGroups": [

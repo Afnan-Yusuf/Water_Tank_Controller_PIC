@@ -2571,7 +2571,7 @@ extern __bank0 __bit __timeout;
 #pragma config IESO = OFF
 #pragma config FCMEN = OFF
 #pragma config LVP = OFF
-# 43 "main.c"
+# 51 "main.c"
 volatile unsigned long seconds_counter = 0;
 volatile unsigned long millis = 0;
 unsigned long last_millis = 0;
@@ -2626,6 +2626,7 @@ unsigned int buzzer_duration = 0;
 _Bool buzzer_active = 0;
 
 unsigned long lt = 0;
+unsigned long lastdispupdt = 0;
 
 _Bool check_button_press(void);
 void trigger_buzzer(unsigned int duration_seconds);
@@ -2647,39 +2648,125 @@ _Bool getSensorResults(_Bool *low_active, _Bool *high_active, _Bool *flow_active
 void startSensorReading(void);
 void setupTimer0(void);
 void buzzer_update();
+void getsensorreadings(void);
+
+void initLCD(void);
+void lcd_cmd(unsigned char cmd);
+void lcd_data(unsigned char data);
+void lcd_string(const char *str);
+void lcd_set_cursor(unsigned char row, unsigned char col);
+void lcd_display_int(int num);
+void lcd_display_bool_binary(_Bool value);
+void dispinfo(uint8_t refreshtime);
 
 void main(void) {
 
 
   initSystem();
 
-  if (!loadSettings(&maxruntimeindex, &minvoltagelimit, &maxvoltagelimit,
-                    &minimumrunningvoltage, &maximumrinningvoltage)) {
-
-    maxruntimeindex = 0;
-    minvoltagelimit = 150;
-    maxvoltagelimit = 255;
-    minimumrunningvoltage = 170;
-    maximumrinningvoltage = 285;
 
 
-    saveSettings(maxruntimeindex, minvoltagelimit, maxvoltagelimit,
-                 minimumrunningvoltage, maximumrinningvoltage);
-  }
+  minvoltagelimit = 200;
+  maxvoltagelimit = 240;
+  minimumrunningvoltage = 190;
+  maximumrinningvoltage = 250;
+  maxruntimeindex = EEPROM_Read(0x01);
+
+
+
+
+
   potraw = readADC(4);
 
-  dryruntime = 1000 *(((uint32_t)potraw * 360) / 1023) + 120;
-# 166 "main.c"
+  dryruntime = (((uint32_t)potraw * 360) / 1023) + 120;
+
+  for (uint8_t i = 0; i < 10; i++) {
+    PORTAbits.RA0 = 1;
+    PORTAbits.RA1 = 1;
+    PORTAbits.RA2 = 1;
+    PORTAbits.RA4 = 1;
+    if (i == 0) {
+      if (PORTCbits.RC1 == 0) {
+        smc = 1;
+      }
+    } else if (i == 3) {
+      if (smc == 1) {
+        if (PORTCbits.RC1 == 0) {
+          settingsmode = 1;
+          i = 10;
+        }
+      }
+    }
+    _delay((unsigned long)((1000)*(8000000/4000.0)));
+    PORTAbits.RA0 = 0;
+    PORTAbits.RA1 = 0;
+    PORTAbits.RA2 = 0;
+    PORTAbits.RA4 = 0;
+    _delay((unsigned long)((1000)*(8000000/4000.0)));
+  }
+
   trigger_buzzer(3000);
   buzzer_update();
 
   init_timer();
+  initLCD();
 
   while (settingsmode) {
-    PORTAbits.RA0 = 0;
-    _delay((unsigned long)((1000)*(8000000/4000.0)));
-    PORTAbits.RA0 = 1;
-    _delay((unsigned long)((1000)*(8000000/4000.0)));
+    buzzer_update();
+
+    getsensorreadings();
+    potraw = readADC(4);
+    dryruntime = (((uint32_t)potraw * 360) / 1023) + 120;
+
+    if (PORTCbits.RC1 == 0) {
+      _Bool is_long_press = check_button_press();
+
+      if (is_long_press) {
+        tankempty = 1;
+        pretankempty = 1;
+
+      } else {
+        maxruntimeindex++;
+        if (maxruntimeindex >= 5) {
+          maxruntimeindex = 0;
+        }
+        EEPROM_Write(0x01, maxruntimeindex);
+      }
+    }
+    switch (maxruntimeindex) {
+    case 0:
+      PORTAbits.RA0 = 0;
+      PORTAbits.RA1 = 0;
+      PORTAbits.RA2 = 0;
+      PORTAbits.RA4 = 1;
+      break;
+    case 1:
+      PORTAbits.RA0 = 0;
+      PORTAbits.RA1 = 0;
+      PORTAbits.RA2 = 1;
+      PORTAbits.RA4 = 0;
+      break;
+    case 2:
+      PORTAbits.RA0 = 0;
+      PORTAbits.RA1 = 1;
+      PORTAbits.RA2 = 0;
+      PORTAbits.RA4 = 0;
+      break;
+    case 3:
+      PORTAbits.RA0 = 1;
+      PORTAbits.RA1 = 0;
+      PORTAbits.RA2 = 0;
+      PORTAbits.RA4 = 0;
+      break;
+    case 4:
+      PORTAbits.RA0 = 0;
+      PORTAbits.RA1 = 1;
+      PORTAbits.RA2 = 1;
+      PORTAbits.RA4 = 0;
+      break;
+    }
+
+    dispinfo(100);
   }
   while (1) {
 
@@ -2697,60 +2784,7 @@ void main(void) {
 
     buzzer_update();
 
-    for (uint8_t i = 0; i < 16; i++) {
-      voltagesum += readADC(3);
-    }
-    voltageraw = voltagesum >> 4;
-    voltagesum = 0;
-    voltage = (((uint32_t)voltageraw * 235) / 1023) + 85;
-
-
-    if(voltage < minvoltagelimit){
-      if(seconds_counter %2 ==0){
-        PORTAbits.RA4 = ~PORTAbits.RA4;
-      }
-    }
-
-    if (seconds_counter % 1 == 0 && !sensors_reading_in_progress && !sensors_reading_complete) {
-      setupTimer0();
-      startSensorReading();
-    }
-
-    if (getSensorResults(&low_sensor_active, &high_sensor_active, &flow_sensor_active)) {
-
-      if (high_sensor_active) {
-
-        pretankempty = 0;
-      }
-      if (!low_sensor_active && !high_sensor_active) {
-
-        pretankempty = 1;
-      }
-
-    }
-
-    if(pretankempty !=tankempty){
-      if(lastsensorcheck == 0){
-        lastsensorcheck = millis;
-      }else if(millis - lastsensorcheck >= sensorbuffer){
-        lastsensorcheck = 0;
-        tankempty = pretankempty;
-      }
-    }else if (lastsensorcheck != 0 && (millis - lastsensorcheck >= sensorbuffer)){
-      lastsensorcheck = 0;
-    }
-
-    if(flow_sensor_active != flowactive){
-        if (lastflowcheck == 0) {
-          lastflowcheck = millis;
-        } else if (millis - lastflowcheck >= sensorbuffer) {
-          lastflowcheck = 0;
-          flowactive = flow_sensor_active;
-        }
-      }else if(lastflowcheck != 0 &&(millis - lastflowcheck >= sensorbuffer)){
-        lastflowcheck = 0;
-      }
-
+    getsensorreadings();
 
     if (tankempty) {
       if (!timeouterror && !voltageerror && !dryrunerror && !motorrunning) {
@@ -2773,8 +2807,8 @@ void main(void) {
             PORTAbits.RA2 = 0;
           }
           if (lastdryruncheck == 0) {
-            lastdryruncheck = millis;
-          } else if (millis - lastdryruncheck >= dryruntime) {
+            lastdryruncheck = seconds_counter;
+          } else if (seconds_counter - lastdryruncheck >= dryruntime) {
             dryrunerror = 1;
             PORTAbits.RA2 = 1;
           }
@@ -2783,11 +2817,9 @@ void main(void) {
           PORTAbits.RA2 = 0;
         }
 
-
-
-
-
-
+         if (voltage > maximumrinningvoltage || voltage < minimumrunningvoltage) {
+          voltageerror = 1;
+         }
       }
     } else {
       if (motorrunning) {
@@ -2802,22 +2834,11 @@ void main(void) {
     if (dryrunerror) {
       motorrunning = 0;
     }
-    if (voltageerror) {
-      if (lastvoltageerror == 0) {
-        lastvoltageerror = seconds_counter;
-      } else if (seconds_counter - lastvoltageerror >= maxvoltageerrortime) {
-        voltageerror = 0;
-        lastvoltageerror = 0;
-      }
 
-      motorrunning = 0;
-    }else if (lastvoltageerror !=0 && (seconds_counter - lastvoltageerror >= maxvoltageerrortime)){
-      lastvoltageerror = 0;
-    }
     if (!motorrunning) {
       if (voltage > maxvoltagelimit || voltage < minvoltagelimit) {
-          voltageerror = 1;
-        }
+        voltageerror = 1;
+      }
       PORTCbits.RC3 = 0;
       PORTAbits.RA1 = 0;
     } else {
@@ -2827,14 +2848,31 @@ void main(void) {
         lt = millis;
 
         trigger_buzzer(200);
-    }
+      }
     }
 
 
-    if ((millis - last_millis) >= 1000) {
-        seconds_counter ++;
-        last_millis = millis;
+
+    if (voltageerror) {
+      if (lastvoltageerror == 0) {
+        lastvoltageerror = seconds_counter;
+      } else if (seconds_counter - lastvoltageerror >= maxvoltageerrortime) {
+        if (voltage > maxvoltagelimit || voltage < minvoltagelimit) {
+        voltageerror = 1;
+      }else{
+        voltageerror = 0;
+
+      }
+        lastvoltageerror = 0;
+      }
+
+      motorrunning = 0;
+    } else if (lastvoltageerror != 0 &&
+               (seconds_counter - lastvoltageerror >= maxvoltageerrortime)) {
+      lastvoltageerror = 0;
     }
+
+    dispinfo(100);
   }
 }
 
@@ -2854,6 +2892,15 @@ void initSystem(void) {
   PORTA = 0x00;
   PORTB = 0x00;
   PORTC = 0x00;
+
+  PORTCbits.RC5 = 0;
+  PORTCbits.RC6 = 0;
+  PORTBbits.RB0 = 0;
+  PORTBbits.RB1 = 0;
+  PORTBbits.RB2 = 0;
+  PORTCbits.RC7 = 0;
+
+  PORTCbits.RC4 = 0;
 }
 
 unsigned int readADC(uint8_t channel) {
@@ -2874,7 +2921,6 @@ void setupTimer0(void) {
   OPTION_REGbits.T0CS = 0;
   OPTION_REGbits.PSA = 0;
   OPTION_REGbits.PS = 0b011;
-
 
 
 
@@ -2910,7 +2956,7 @@ _Bool getSensorResults(_Bool *low_active, _Bool *high_active, _Bool *flow_active
 void __attribute__((picinterrupt(("")))) isr(void) {
 
   if (PIR1bits.TMR1IF) {
-    millis ++;
+    millis++;
     PIR1bits.TMR1IF = 0;
     TMR1H = 255;
     TMR1L = 14;
@@ -3036,8 +3082,7 @@ void trigger_buzzer(unsigned int duration_seconds) {
 }
 
 void buzzer_update() {
-  if (buzzer_active &&
-      (millis - buzzer_start_time >= buzzer_duration)) {
+  if (buzzer_active && (millis - buzzer_start_time >= buzzer_duration)) {
     PORTCbits.RC4 = 0;
     buzzer_active = 0;
     buzzer_duration = 0;
@@ -3092,4 +3137,242 @@ _Bool check_button_press(void) {
   }
 
   return 0;
+}
+
+void initLCD(void) {
+
+  _delay((unsigned long)((15)*(8000000/4000.0)));
+
+
+
+  PORTCbits.RC5 = 0;
+  PORTCbits.RC7 = 0;
+  PORTBbits.RB2 = 0;
+  PORTBbits.RB1 = 1;
+  PORTBbits.RB0 = 1;
+  PORTCbits.RC6 = 1;
+  _delay((unsigned long)((1)*(8000000/4000000.0)));
+  PORTCbits.RC6 = 0;
+  _delay((unsigned long)((5)*(8000000/4000.0)));
+
+
+  PORTCbits.RC6 = 1;
+  _delay((unsigned long)((1)*(8000000/4000000.0)));
+  PORTCbits.RC6 = 0;
+  _delay((unsigned long)((1)*(8000000/4000.0)));
+
+
+  PORTCbits.RC6 = 1;
+  _delay((unsigned long)((1)*(8000000/4000000.0)));
+  PORTCbits.RC6 = 0;
+  _delay((unsigned long)((1)*(8000000/4000.0)));
+
+
+  PORTCbits.RC7 = 0;
+  PORTBbits.RB2 = 0;
+  PORTBbits.RB1 = 1;
+  PORTBbits.RB0 = 0;
+  PORTCbits.RC6 = 1;
+  _delay((unsigned long)((1)*(8000000/4000000.0)));
+  PORTCbits.RC6 = 0;
+  _delay((unsigned long)((1)*(8000000/4000.0)));
+
+
+
+  lcd_cmd(0x28);
+
+
+  lcd_cmd(0x08);
+
+
+  lcd_cmd(0x01);
+  _delay((unsigned long)((2)*(8000000/4000.0)));
+
+
+  lcd_cmd(0x06);
+
+
+  lcd_cmd(0x0C);
+}
+
+void lcd_cmd(unsigned char cmd) {
+  PORTCbits.RC5 = 0;
+
+
+  PORTCbits.RC7 = (cmd & 0x80) ? 1 : 0;
+  PORTBbits.RB2 = (cmd & 0x40) ? 1 : 0;
+  PORTBbits.RB1 = (cmd & 0x20) ? 1 : 0;
+  PORTBbits.RB0 = (cmd & 0x10) ? 1 : 0;
+
+  PORTCbits.RC6 = 1;
+  _delay((unsigned long)((1)*(8000000/4000000.0)));
+  PORTCbits.RC6 = 0;
+  _delay((unsigned long)((100)*(8000000/4000000.0)));
+
+
+  PORTCbits.RC7 = (cmd & 0x08) ? 1 : 0;
+  PORTBbits.RB2 = (cmd & 0x04) ? 1 : 0;
+  PORTBbits.RB1 = (cmd & 0x02) ? 1 : 0;
+  PORTBbits.RB0 = (cmd & 0x01) ? 1 : 0;
+
+  PORTCbits.RC6 = 1;
+  _delay((unsigned long)((1)*(8000000/4000000.0)));
+  PORTCbits.RC6 = 0;
+  _delay((unsigned long)((100)*(8000000/4000000.0)));
+}
+
+void lcd_set_cursor(unsigned char row, unsigned char col) {
+  unsigned char address;
+
+
+  if (row == 0) {
+    address = 0x80 + col;
+  } else {
+    address = 0xC0 + col;
+  }
+
+  lcd_cmd(address);
+}
+
+void lcd_data(unsigned char data) {
+  PORTCbits.RC5 = 1;
+
+
+  PORTCbits.RC7 = (data & 0x80) ? 1 : 0;
+  PORTBbits.RB2 = (data & 0x40) ? 1 : 0;
+  PORTBbits.RB1 = (data & 0x20) ? 1 : 0;
+  PORTBbits.RB0 = (data & 0x10) ? 1 : 0;
+
+  PORTCbits.RC6 = 1;
+  _delay((unsigned long)((1)*(8000000/4000000.0)));
+  PORTCbits.RC6 = 0;
+  _delay((unsigned long)((100)*(8000000/4000000.0)));
+
+
+  PORTCbits.RC7 = (data & 0x08) ? 1 : 0;
+  PORTBbits.RB2 = (data & 0x04) ? 1 : 0;
+  PORTBbits.RB1 = (data & 0x02) ? 1 : 0;
+  PORTBbits.RB0 = (data & 0x01) ? 1 : 0;
+
+  PORTCbits.RC6 = 1;
+  _delay((unsigned long)((1)*(8000000/4000000.0)));
+  PORTCbits.RC6 = 0;
+  _delay((unsigned long)((100)*(8000000/4000000.0)));
+}
+
+void lcd_display_int(int num) {
+
+  if (num < 0) {
+    lcd_data('-');
+    num = -num;
+  }
+
+
+  if (num > 999)
+    num = 999;
+
+
+  lcd_data('0' + (num / 100));
+
+
+  lcd_data('0' + ((num / 10) % 10));
+
+
+  lcd_data('0' + (num % 10));
+}
+
+void getsensorreadings(void) {
+  for (uint8_t i = 0; i < 16; i++) {
+    voltagesum += readADC(3);
+  }
+  voltageraw = voltagesum >> 4;
+  voltagesum = 0;
+  voltage = (((uint32_t)voltageraw * 235) / 1023) + 85;
+
+
+
+  if (seconds_counter % 1 == 0 && !sensors_reading_in_progress &&
+      !sensors_reading_complete) {
+    setupTimer0();
+    startSensorReading();
+  }
+
+  if (getSensorResults(&low_sensor_active, &high_sensor_active,
+                       &flow_sensor_active)) {
+
+    if (high_sensor_active) {
+
+      pretankempty = 0;
+    }
+    if (!low_sensor_active && !high_sensor_active) {
+
+      pretankempty = 1;
+    }
+  }
+
+  if (pretankempty != tankempty) {
+    if (lastsensorcheck == 0) {
+      lastsensorcheck = millis;
+    } else if (millis - lastsensorcheck >= sensorbuffer) {
+      lastsensorcheck = 0;
+      tankempty = pretankempty;
+    }
+  } else if (lastsensorcheck != 0 &&
+             (millis - lastsensorcheck >= sensorbuffer)) {
+    lastsensorcheck = 0;
+  }
+
+  if (flow_sensor_active != flowactive) {
+    if (lastflowcheck == 0) {
+      lastflowcheck = millis;
+    } else if (millis - lastflowcheck >= sensorbuffer) {
+      lastflowcheck = 0;
+      flowactive = flow_sensor_active;
+    }
+  } else if (lastflowcheck != 0 && (millis - lastflowcheck >= sensorbuffer)) {
+    lastflowcheck = 0;
+  }
+  if ((millis - last_millis) >= 1000) {
+    seconds_counter++;
+    last_millis = millis;
+  }
+}
+
+void lcd_display_bool_binary(_Bool value) {
+  if (value) {
+    lcd_data('1');
+  } else {
+    lcd_data('0');
+  }
+}
+
+void dispinfo(uint8_t refreshtime) {
+  if (millis - lastdispupdt >= refreshtime) {
+    lastdispupdt = millis;
+
+    lcd_set_cursor(0, 0);
+    lcd_display_int(voltage);
+    lcd_set_cursor(0, 4);
+    lcd_display_int(seconds_counter / 60);
+    lcd_set_cursor(0, 8);
+    lcd_display_int(dryruntime);
+    lcd_set_cursor(0, 12);
+    lcd_display_int(maxruntimeindex);
+    lcd_set_cursor(1, 0);
+    lcd_display_int(EEPROM_Read(0x04));
+
+    lcd_set_cursor(1, 4);
+    lcd_display_bool_binary(low_sensor_active);
+    lcd_set_cursor(1, 6);
+    lcd_display_bool_binary(high_sensor_active);
+    lcd_set_cursor(1, 8);
+    lcd_display_bool_binary(flow_sensor_active);
+    lcd_set_cursor(1, 10);
+    lcd_display_bool_binary(tankempty);
+    lcd_display_bool_binary(motorrunning);
+    lcd_display_bool_binary(dryrunerror);
+    lcd_display_bool_binary(voltageerror);
+
+
+  }
 }

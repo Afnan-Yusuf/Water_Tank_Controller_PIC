@@ -1,6 +1,6 @@
 
 16F883 Memory Summary:
-    Program space        used   A14h (  2580) of  1000h words   ( 63.0%)
+    Program space        used   973h (  2419) of  1000h words   ( 59.1%)
     Data space           used    8Eh (   142) of   100h bytes   ( 55.5%)
     EEPROM space         used     0h (     0) of   100h bytes   (  0.0%)
     Configuration bits   used     1h (     1) of     2h words   ( 50.0%)

@@ -2653,10 +2653,9 @@ void main(void) {
 
   initSystem();
 
-  if (!loadSettings(&maxruntimeindex, &minvoltagelimit, &maxvoltagelimit,
-                    &minimumrunningvoltage, &maximumrinningvoltage)) {
 
-    maxruntimeindex = 0;
+
+    maxruntimeindex = 4;
     minvoltagelimit = 150;
     maxvoltagelimit = 255;
     minimumrunningvoltage = 170;
@@ -2665,11 +2664,11 @@ void main(void) {
 
     saveSettings(maxruntimeindex, minvoltagelimit, maxvoltagelimit,
                  minimumrunningvoltage, maximumrinningvoltage);
-  }
+
   potraw = readADC(4);
 
   dryruntime = 1000 *(((uint32_t)potraw * 360) / 1023) + 120;
-# 166 "main.c"
+# 165 "main.c"
   trigger_buzzer(3000);
   buzzer_update();
 

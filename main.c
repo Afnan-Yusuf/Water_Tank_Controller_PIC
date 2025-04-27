@@ -67,7 +67,7 @@ uint16_t maxruntime[5] = {30, 45, 60, 120, 0xFFFF};
 
 bool to = 0;
 bool smc = 0;
-bool settingsmode = 1;
+bool settingsmode = 0;
 
 #define voltagesamples 16
 unsigned int potraw;
@@ -132,6 +132,8 @@ void lcd_data(unsigned char data);
 void lcd_string(const char *str);
 void lcd_set_cursor(unsigned char row, unsigned char col);
 void lcd_display_int(int num);
+void lcd_display_bool_binary(bool value);
+void dispinfo(uint8_t refreshtime);
 
 void main(void) {
 
@@ -139,13 +141,12 @@ void main(void) {
   initSystem();
 
   // EEPROM wasn't properly initialized, set defaults
-  //maxruntimeindex = 2; // Default threshold
-  minvoltagelimit = 150;
-  maxvoltagelimit = 255;
-  minimumrunningvoltage = 170;
-  maximumrinningvoltage = 285;
-      maxruntimeindex = EEPROM_Read(ADDR_TIMOUT_INDEX);
-
+  // maxruntimeindex = 2; // Default threshold
+  minvoltagelimit = 200;
+  maxvoltagelimit = 240;
+  minimumrunningvoltage = 190;
+  maximumrinningvoltage = 250;
+  maxruntimeindex = EEPROM_Read(ADDR_TIMOUT_INDEX);
 
   // Save defaults to EEPROM
   // saveSettings(maxruntimeindex, minvoltagelimit, maxvoltagelimit,
@@ -153,7 +154,7 @@ void main(void) {
 
   potraw = readADC(dryrunpotchannel);
   // dryruntime = 30000;
-  dryruntime = 1000 * (((uint32_t)potraw * 360) / 1023) + 120;
+  dryruntime = (((uint32_t)potraw * 360) / 1023) + 120;
   ///*
   for (uint8_t i = 0; i < 10; i++) {
     MAINS_LED = 1;
@@ -188,7 +189,7 @@ void main(void) {
 
   while (settingsmode) {
     buzzer_update();
-    
+
     getsensorreadings();
     potraw = readADC(dryrunpotchannel);
     dryruntime = (((uint32_t)potraw * 360) / 1023) + 120;
@@ -201,59 +202,47 @@ void main(void) {
         pretankempty = true;
         // trigger_buzzer(1); // Confirmation beep
       } else {
-        maxruntimeindex ++;
-        if(maxruntimeindex >=5){
-          maxruntimeindex = 0; 
+        maxruntimeindex++;
+        if (maxruntimeindex >= 5) {
+          maxruntimeindex = 0;
         }
         EEPROM_Write(ADDR_TIMOUT_INDEX, maxruntimeindex);
       }
     }
     switch (maxruntimeindex) {
-      case 0:
-        MAINS_LED = 0;
-        MOTOR_ON_LED = 0;
-        DRY_RUN_LED = 0;
-        VOLTAGE_ALERT_LED = 1;
-        break;
-      case 1:
-        MAINS_LED = 0;
-        MOTOR_ON_LED = 0;
-        DRY_RUN_LED = 1;
-        VOLTAGE_ALERT_LED = 0;
-        break;
-      case 2:
-        MAINS_LED = 0;
-        MOTOR_ON_LED = 1;
-        DRY_RUN_LED = 0;
-        VOLTAGE_ALERT_LED = 0;
-        break;
-      case 3:
-        MAINS_LED = 1;
-        MOTOR_ON_LED = 0;
-        DRY_RUN_LED = 0;
-        VOLTAGE_ALERT_LED = 0;
-        break;
-      case 4:
-        MAINS_LED = 0;
-        MOTOR_ON_LED = 1;
-        DRY_RUN_LED = 1;
-        VOLTAGE_ALERT_LED = 0;
-        break;
-    
+    case 0:
+      MAINS_LED = 0;
+      MOTOR_ON_LED = 0;
+      DRY_RUN_LED = 0;
+      VOLTAGE_ALERT_LED = 1;
+      break;
+    case 1:
+      MAINS_LED = 0;
+      MOTOR_ON_LED = 0;
+      DRY_RUN_LED = 1;
+      VOLTAGE_ALERT_LED = 0;
+      break;
+    case 2:
+      MAINS_LED = 0;
+      MOTOR_ON_LED = 1;
+      DRY_RUN_LED = 0;
+      VOLTAGE_ALERT_LED = 0;
+      break;
+    case 3:
+      MAINS_LED = 1;
+      MOTOR_ON_LED = 0;
+      DRY_RUN_LED = 0;
+      VOLTAGE_ALERT_LED = 0;
+      break;
+    case 4:
+      MAINS_LED = 0;
+      MOTOR_ON_LED = 1;
+      DRY_RUN_LED = 1;
+      VOLTAGE_ALERT_LED = 0;
+      break;
     }
 
-    if (millis - lastdispupdt >= 100) {
-      lastdispupdt = millis;
-      //lcd_cmd(0x01);
-      lcd_set_cursor(0, 0);
-      lcd_display_int(voltage);
-      lcd_set_cursor(0, 4);
-      lcd_display_int(seconds_counter);
-      lcd_set_cursor(0, 8);
-      lcd_display_int(dryruntime);
-      lcd_set_cursor(0, 12);
-      lcd_display_int(maxruntimeindex);
-    }
+    dispinfo(100);
   }
   while (1) {
 
@@ -294,8 +283,8 @@ void main(void) {
             DRY_RUN_LED = 0;
           }
           if (lastdryruncheck == 0) {
-            lastdryruncheck = millis;
-          } else if (millis - lastdryruncheck >= dryruntime) {
+            lastdryruncheck = seconds_counter;
+          } else if (seconds_counter - lastdryruncheck >= dryruntime) {
             dryrunerror = true;
             DRY_RUN_LED = 1;
           }
@@ -304,10 +293,9 @@ void main(void) {
           DRY_RUN_LED = 0;
         }
 
-        // if (voltage > maximumrinningvoltage || voltage <
-        // minimumrunningvoltage) {
-        //   voltageerror = true;
-        // }
+         if (voltage > maximumrinningvoltage || voltage < minimumrunningvoltage) {
+          voltageerror = true;
+         }
       }
     } else {
       if (motorrunning) {
@@ -322,19 +310,7 @@ void main(void) {
     if (dryrunerror) {
       motorrunning = false;
     }
-    if (voltageerror) {
-      if (lastvoltageerror == 0) {
-        lastvoltageerror = seconds_counter;
-      } else if (seconds_counter - lastvoltageerror >= maxvoltageerrortime) {
-        voltageerror = false;
-        lastvoltageerror = 0;
-      }
-
-      motorrunning = false;
-    } else if (lastvoltageerror != 0 &&
-               (seconds_counter - lastvoltageerror >= maxvoltageerrortime)) {
-      lastvoltageerror = 0;
-    }
+    
     if (!motorrunning) {
       if (voltage > maxvoltagelimit || voltage < minvoltagelimit) {
         voltageerror = true;
@@ -350,6 +326,29 @@ void main(void) {
         trigger_buzzer(200);
       }
     }
+
+
+
+    if (voltageerror) {
+      if (lastvoltageerror == 0) {
+        lastvoltageerror = seconds_counter;
+      } else if (seconds_counter - lastvoltageerror >= maxvoltageerrortime) {
+        if (voltage > maxvoltagelimit || voltage < minvoltagelimit) {
+        voltageerror = true;
+      }else{
+        voltageerror = false;
+
+      }
+        lastvoltageerror = 0;
+      }
+
+      motorrunning = false;
+    } else if (lastvoltageerror != 0 &&
+               (seconds_counter - lastvoltageerror >= maxvoltageerrortime)) {
+      lastvoltageerror = 0;
+    }
+
+    dispinfo(100);
   }
 }
 
@@ -737,11 +736,6 @@ void lcd_data(unsigned char data) {
   __delay_us(100);
 }
 
-void lcd_string(const char *str) {
-  while (*str) {
-    lcd_data(*str++);
-  }
-}
 void lcd_display_int(int num) {
   // Handle negative numbers if needed
   if (num < 0) {
@@ -771,11 +765,7 @@ void getsensorreadings(void) {
   voltagesum = 0;
   voltage = (((uint32_t)voltageraw * 235) / 1023) + 85;
 
-  if (voltage < minvoltagelimit) {
-    if (seconds_counter % 2 == 0) {
-      VOLTAGE_ALERT_LED = ~VOLTAGE_ALERT_LED;
-    }
-  }
+  
 
   if (seconds_counter % 1 == 0 && !sensors_reading_in_progress &&
       !sensors_reading_complete) {
@@ -821,5 +811,44 @@ void getsensorreadings(void) {
   if ((millis - last_millis) >= 1000) {
     seconds_counter++;
     last_millis = millis;
+  }
+}
+
+void lcd_display_bool_binary(bool value) {
+  if (value) {
+    lcd_data('1');
+  } else {
+    lcd_data('0');
+  }
+}
+
+void dispinfo(uint8_t refreshtime) {
+  if (millis - lastdispupdt >= refreshtime) {
+    lastdispupdt = millis;
+    // lcd_cmd(0x01);
+    lcd_set_cursor(0, 0);
+    lcd_display_int(voltage);
+    lcd_set_cursor(0, 4);
+    lcd_display_int(seconds_counter / 60);
+    lcd_set_cursor(0, 8);
+    lcd_display_int(dryruntime);
+    lcd_set_cursor(0, 12);
+    lcd_display_int(maxruntimeindex);
+    lcd_set_cursor(1, 0);
+    lcd_display_int(EEPROM_Read(ADDR_HIGHVOLTAGE));
+
+    lcd_set_cursor(1, 4);
+    lcd_display_bool_binary(low_sensor_active);
+    lcd_set_cursor(1, 6);
+    lcd_display_bool_binary(high_sensor_active);
+    lcd_set_cursor(1, 8);
+    lcd_display_bool_binary(flow_sensor_active);
+    lcd_set_cursor(1, 10);
+    lcd_display_bool_binary(tankempty);
+    lcd_display_bool_binary(motorrunning);
+    lcd_display_bool_binary(dryrunerror);
+    lcd_display_bool_binary(voltageerror);
+
+
   }
 }
