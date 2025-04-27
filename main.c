@@ -835,10 +835,10 @@ void lcd_display_bool_binary(bool value) {
 }
 
 void dispinfo(uint8_t refreshtime) {
-  /*
+  ///*
   if (millis - lastdispupdt >= refreshtime) {
     lastdispupdt = millis;
-    // lcd_cmd(0x01);
+    lcd_cmd(0x01);
     lcd_set_cursor(0, 0);
     lcd_display_int(voltage);
     lcd_set_cursor(0, 4);
@@ -848,7 +848,7 @@ void dispinfo(uint8_t refreshtime) {
     lcd_set_cursor(0, 12);
     lcd_display_int(maxruntimeindex);
     lcd_set_cursor(1, 0);
-    lcd_display_int(EEPROM_Read(ADDR_HIGHVOLTAGE));
+    lcd_display_int(readADC(dryrunpotchannel));
 
     lcd_set_cursor(1, 4);
     lcd_display_bool_binary(low_sensor_active);
@@ -863,7 +863,9 @@ void dispinfo(uint8_t refreshtime) {
     lcd_display_bool_binary(voltageerror);
 
 
-  }*/
+  }
+  //*/
+  /*
   if (millis - lastdispupdt >= refreshtime) {
     lastdispupdt = millis;
     lcd_cmd(0x01);
@@ -890,5 +892,5 @@ void dispinfo(uint8_t refreshtime) {
     lcd_display_int(seconds_counter - lastdryruncheck);
 
 
-  }
+  }*/
 }
