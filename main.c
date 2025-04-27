@@ -1,4 +1,5 @@
 
+#include <builtins.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <xc.h>
@@ -737,24 +738,35 @@ void lcd_data(unsigned char data) {
 }
 
 void lcd_display_int(int num) {
-  // Handle negative numbers if needed
-  if (num < 0) {
-    lcd_data('-');
-    num = -num;
-  }
-
-  // Limit to 999 for display simplicity
-  if (num > 999)
-    num = 999;
-
-  // Display hundreds digit
-  lcd_data('0' + (num / 100));
-
-  // Display tens digit
-  lcd_data('0' + ((num / 10) % 10));
-
-  // Display ones digit
-  lcd_data('0' + (num % 10));
+    // Handle negative numbers if needed
+    if (num < 0) {
+        lcd_data('-');
+        num = -num;
+    }
+    
+    // Limit to 999 for display simplicity
+    if (num > 999)
+        num = 999;
+    
+    // Calculate digits
+    int hundreds = num / 100;
+    int tens = (num / 10) % 10;
+    int ones = num % 10;
+    
+    // Only display necessary digits
+    if (hundreds > 0) {
+        // Number is 100-999, display all three digits
+        lcd_data('0' + hundreds);
+        lcd_data('0' + tens);
+        lcd_data('0' + ones);
+    } else if (tens > 0) {
+        // Number is 10-99, display only tens and ones
+        lcd_data('0' + tens);
+        lcd_data('0' + ones);
+    } else {
+        // Number is 0-9, display only ones digit
+        lcd_data('0' + ones);
+    }
 }
 
 void getsensorreadings(void) {
@@ -823,6 +835,7 @@ void lcd_display_bool_binary(bool value) {
 }
 
 void dispinfo(uint8_t refreshtime) {
+  /*
   if (millis - lastdispupdt >= refreshtime) {
     lastdispupdt = millis;
     // lcd_cmd(0x01);
@@ -848,6 +861,33 @@ void dispinfo(uint8_t refreshtime) {
     lcd_display_bool_binary(motorrunning);
     lcd_display_bool_binary(dryrunerror);
     lcd_display_bool_binary(voltageerror);
+
+
+  }*/
+  if (millis - lastdispupdt >= refreshtime) {
+    lastdispupdt = millis;
+    lcd_cmd(0x01);
+    __delay_ms(2);
+    lcd_set_cursor(1, 0);
+    lcd_display_int(voltage);
+    lcd_set_cursor(1, 4);
+    lcd_display_int(maxruntimeindex+1);
+    lcd_set_cursor(1, 7);
+    lcd_display_int(seconds_counter - motorstarttime);
+ 
+
+    lcd_set_cursor(0, 0);
+    lcd_display_bool_binary(low_sensor_active);
+    lcd_set_cursor(0, 2);
+    lcd_display_bool_binary(high_sensor_active);
+    lcd_set_cursor(0, 4);
+    lcd_display_bool_binary(flow_sensor_active);
+    lcd_set_cursor(0, 6);
+    lcd_display_bool_binary(dryrunerror);
+    lcd_set_cursor(0, 8);
+    lcd_display_int(dryruntime);
+    lcd_set_cursor(0, 13);
+    lcd_display_int(seconds_counter - lastdryruncheck);
 
 
   }
