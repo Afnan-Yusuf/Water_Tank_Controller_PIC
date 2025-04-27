@@ -155,7 +155,7 @@ void main(void) {
 
   potraw = readADC(dryrunpotchannel);
   // dryruntime = 30000;
-  dryruntime = (((uint32_t)potraw * 360) / 1023) + 120;
+  dryruntime = (((uint32_t)potraw * 480) / 1023) + 120;
   ///*
   for (uint8_t i = 0; i < 10; i++) {
     MAINS_LED = 1;
@@ -193,7 +193,7 @@ void main(void) {
 
     getsensorreadings();
     potraw = readADC(dryrunpotchannel);
-    dryruntime = (((uint32_t)potraw * 360) / 1023) + 120;
+    dryruntime = (((uint32_t)potraw * 480) / 1023) + 120;
 
     if (PUSHBUTTON == 0) {
       bool is_long_press = check_button_press();
@@ -835,10 +835,11 @@ void lcd_display_bool_binary(bool value) {
 }
 
 void dispinfo(uint8_t refreshtime) {
-  ///*
+  /*
   if (millis - lastdispupdt >= refreshtime) {
     lastdispupdt = millis;
     lcd_cmd(0x01);
+    __delay_ms(2);
     lcd_set_cursor(0, 0);
     lcd_display_int(voltage);
     lcd_set_cursor(0, 4);
@@ -864,8 +865,8 @@ void dispinfo(uint8_t refreshtime) {
 
 
   }
-  //*/
-  /*
+  */
+  ///*
   if (millis - lastdispupdt >= refreshtime) {
     lastdispupdt = millis;
     lcd_cmd(0x01);
@@ -892,5 +893,5 @@ void dispinfo(uint8_t refreshtime) {
     lcd_display_int(seconds_counter - lastdryruncheck);
 
 
-  }*/
+  }//*/
 }
