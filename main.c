@@ -159,7 +159,7 @@ void main(void) {
       if (PUSHBUTTON == 0) {
         smc = 1;
       }
-    } else if (i == 3) {
+    } else if (i == 2) {
       if (smc == 1) {
         if (PUSHBUTTON == 0) {
           settingsmode = 1;
