@@ -40,6 +40,16 @@
 #define HIGH_SENSOR_PIN PORTBbits.RB4 // Pin 25
 #define FLOW_SENSOR_PIN PORTBbits.RB3 // Pin 26
 
+
+// LCD pin definitions
+#define LCD_RS          PORTCbits.RC5
+#define LCD_EN          PORTCbits.RC6
+#define LCD_D7          PORTCbits.RC7
+#define LCD_D4          PORTBbits.RB0
+#define LCD_D5          PORTBbits.RB1
+#define LCD_D6          PORTBbits.RB2
+
+
 volatile unsigned long seconds_counter = 0;
 volatile unsigned long millis = 0;
 unsigned long last_millis = 0;
@@ -116,15 +126,22 @@ void startSensorReading(void);
 void setupTimer0(void);
 void buzzer_update();
 
+
+void initLCD(void);
+void lcd_cmd(unsigned char cmd);
+void lcd_data(unsigned char data);
+void lcd_string(const char *str);
+void lcd_set_cursor(unsigned char row, unsigned char col);
+void lcd_display_int(int num);
+
 void main(void) {
 
   // Initialize the system
   initSystem();
 
-  if (!loadSettings(&maxruntimeindex, &minvoltagelimit, &maxvoltagelimit,
-                    &minimumrunningvoltage, &maximumrinningvoltage)) {
+
     // EEPROM wasn't properly initialized, set defaults
-    maxruntimeindex = 0; // Default threshold
+    maxruntimeindex = 4; // Default threshold
     minvoltagelimit = 150;
     maxvoltagelimit = 255;
     minimumrunningvoltage = 170;
@@ -133,11 +150,11 @@ void main(void) {
     // Save defaults to EEPROM
     saveSettings(maxruntimeindex, minvoltagelimit, maxvoltagelimit,
                  minimumrunningvoltage, maximumrinningvoltage);
-  }
+  
   potraw = readADC(dryrunpotchannel);
   //dryruntime = 30000;
   dryruntime = 1000 *(((uint32_t)potraw * 360) / 1023) + 120;
-  /*
+  ///*
   for (uint8_t i = 0; i < 10; i++) {
     MAINS_LED = 1;
     MOTOR_ON_LED = 1;
@@ -162,17 +179,26 @@ void main(void) {
     VOLTAGE_ALERT_LED = 0;
     __delay_ms(1000);
   }
-  */
+  //*/
   trigger_buzzer(3000);
   buzzer_update();
   
   init_timer();
 
   while (settingsmode) {
-    MAINS_LED = 0;
-    __delay_ms(1000);
-    MAINS_LED = 1;
-    __delay_ms(1000);
+    buzzer_update();
+    initLCD();
+    lcd_set_cursor(0, 0);
+    lcd_string("LCD Test");
+    for (uint8_t i = 0; i < voltagesamples; i++) {
+      voltagesum += readADC(voltagechannel);
+    }
+    voltageraw = voltagesum >> 4; // Average the readings
+    voltagesum = 0;
+    voltage = (((uint32_t)voltageraw * 235) / 1023) + 85;
+    lcd_display_int(voltage);
+
+
   }
   while (1) {
 
@@ -190,59 +216,7 @@ void main(void) {
 
     buzzer_update();
 
-    for (uint8_t i = 0; i < voltagesamples; i++) {
-      voltagesum += readADC(voltagechannel);
-    }
-    voltageraw = voltagesum >> 4; // Average the readings
-    voltagesum = 0;
-    voltage = (((uint32_t)voltageraw * 235) / 1023) + 85;
-
     
-    if(voltage < minvoltagelimit){
-      if(seconds_counter %2 ==0){
-        VOLTAGE_ALERT_LED = ~VOLTAGE_ALERT_LED;
-      }
-    }
-
-    if (seconds_counter % 1 == 0 && !sensors_reading_in_progress && !sensors_reading_complete) {
-      setupTimer0(); // Set up and enable Timer0 for readings
-      startSensorReading();
-    }
-    
-    if (getSensorResults(&low_sensor_active, &high_sensor_active, &flow_sensor_active)) {
-
-      if (high_sensor_active) {
-        //VOLTAGE_ALERT_LED = 1;
-        pretankempty = false;
-      }
-      if (!low_sensor_active && !high_sensor_active) {
-        //VOLTAGE_ALERT_LED = 0;
-        pretankempty = true;
-      }
-      
-    }
-
-    if(pretankempty !=tankempty){
-      if(lastsensorcheck == 0){
-        lastsensorcheck = millis;
-      }else if(millis - lastsensorcheck >= sensorbuffer){
-        lastsensorcheck = 0;
-        tankempty = pretankempty;
-      }
-    }else if (lastsensorcheck != 0 && (millis - lastsensorcheck >= sensorbuffer)){
-      lastsensorcheck = 0;
-    } 
-
-    if(flow_sensor_active != flowactive){
-        if (lastflowcheck == 0) {
-          lastflowcheck = millis;
-        } else if (millis - lastflowcheck >= sensorbuffer) {
-          lastflowcheck = 0;
-          flowactive = flow_sensor_active;
-        }
-      }else if(lastflowcheck != 0 &&(millis - lastflowcheck >= sensorbuffer)){
-        lastflowcheck = 0;
-      }
 
 
     if (tankempty) {
@@ -347,6 +321,15 @@ void initSystem(void) {
   PORTA = 0x00;
   PORTB = 0x00;
   PORTC = 0x00;
+
+  LCD_RS = 0;
+    LCD_EN = 0;
+    LCD_D4 = 0;
+    LCD_D5 = 0;
+    LCD_D6 = 0;
+    LCD_D7 = 0;
+
+    BUZZER = 0;
 }
 
 unsigned int readADC(uint8_t channel) {
@@ -585,4 +568,185 @@ bool check_button_press(void) {
   }
 
   return false; // No press
+}
+
+void initLCD(void) {
+    // Wait for LCD to power up
+    __delay_ms(15);
+    
+    // Init sequence for 4-bit mode
+    // First command (0x3) - sent 3 times
+    LCD_RS = 0;                    // Command mode
+    LCD_D7 = 0; LCD_D6 = 0; LCD_D5 = 1; LCD_D4 = 1;
+    LCD_EN = 1; __delay_us(1); LCD_EN = 0;
+    __delay_ms(5);                 // Wait > 4.1ms
+    
+    // Second command (0x3) - sent again
+    LCD_EN = 1; __delay_us(1); LCD_EN = 0;
+    __delay_ms(1);                 // Wait > 100us
+    
+    // Third command (0x3) - sent again
+    LCD_EN = 1; __delay_us(1); LCD_EN = 0;
+    __delay_ms(1);                 // Wait > 100us
+    
+    // Set to 4-bit mode (0x2)
+    LCD_D7 = 0; LCD_D6 = 0; LCD_D5 = 1; LCD_D4 = 0;
+    LCD_EN = 1; __delay_us(1); LCD_EN = 0;
+    __delay_ms(1);                 // Wait > 100us
+    
+    // Now LCD is in 4-bit mode, we can use lcd_cmd function
+    // Function set: 4-bit, 2 lines, 5x8 font
+    lcd_cmd(0x28);
+    
+    // Display off
+    lcd_cmd(0x08);
+    
+    // Clear display
+    lcd_cmd(0x01);
+    __delay_ms(2);                // Clear command needs longer delay
+    
+    // Entry mode set: Increment cursor, no display shift
+    lcd_cmd(0x06);
+    
+    // Display on, cursor off, blinking off
+    lcd_cmd(0x0C);
+}
+
+void lcd_cmd(unsigned char cmd) {
+    LCD_RS = 0;                    // Command mode
+    
+    // Send higher nibble
+    LCD_D7 = (cmd & 0x80) ? 1 : 0;
+    LCD_D6 = (cmd & 0x40) ? 1 : 0;
+    LCD_D5 = (cmd & 0x20) ? 1 : 0;
+    LCD_D4 = (cmd & 0x10) ? 1 : 0;
+    
+    LCD_EN = 1; __delay_us(1); LCD_EN = 0;
+    __delay_us(100);
+    
+    // Send lower nibble
+    LCD_D7 = (cmd & 0x08) ? 1 : 0;
+    LCD_D6 = (cmd & 0x04) ? 1 : 0;
+    LCD_D5 = (cmd & 0x02) ? 1 : 0;
+    LCD_D4 = (cmd & 0x01) ? 1 : 0;
+    
+    LCD_EN = 1; __delay_us(1); LCD_EN = 0;
+    __delay_us(100);
+}
+
+void lcd_set_cursor(unsigned char row, unsigned char col) {
+    unsigned char address;
+    
+    // Calculate DDRAM address based on row and column
+    if (row == 0) {
+        address = 0x80 + col;  // First row starts at 0x80
+    } else {
+        address = 0xC0 + col;  // Second row starts at 0xC0
+    }
+    
+    lcd_cmd(address);
+}
+
+void lcd_data(unsigned char data) {
+    LCD_RS = 1;                    // Data mode
+    
+    // Send higher nibble
+    LCD_D7 = (data & 0x80) ? 1 : 0;
+    LCD_D6 = (data & 0x40) ? 1 : 0;
+    LCD_D5 = (data & 0x20) ? 1 : 0;
+    LCD_D4 = (data & 0x10) ? 1 : 0;
+    
+    LCD_EN = 1; __delay_us(1); LCD_EN = 0;
+    __delay_us(100);
+    
+    // Send lower nibble
+    LCD_D7 = (data & 0x08) ? 1 : 0;
+    LCD_D6 = (data & 0x04) ? 1 : 0;
+    LCD_D5 = (data & 0x02) ? 1 : 0;
+    LCD_D4 = (data & 0x01) ? 1 : 0;
+    
+    LCD_EN = 1; __delay_us(1); LCD_EN = 0;
+    __delay_us(100);
+}
+
+void lcd_string(const char *str) {
+    while (*str) {
+        lcd_data(*str++);
+    }
+}
+void lcd_display_int(int num) {
+    // Handle negative numbers if needed
+    if (num < 0) {
+        lcd_data('-');
+        num = -num;
+    }
+    
+    // Limit to 999 for display simplicity
+    if (num > 999) num = 999;
+    
+    // Display hundreds digit
+    lcd_data('0' + (num / 100));
+    
+    // Display tens digit
+    lcd_data('0' + ((num / 10) % 10));
+    
+    // Display ones digit
+    lcd_data('0' + (num % 10));
+}
+
+void getsensorreadings(void){
+  for (uint8_t i = 0; i < voltagesamples; i++) {
+      voltagesum += readADC(voltagechannel);
+    }
+    voltageraw = voltagesum >> 4; // Average the readings
+    voltagesum = 0;
+    voltage = (((uint32_t)voltageraw * 235) / 1023) + 85;
+
+    
+    if(voltage < minvoltagelimit){
+      if(seconds_counter %2 ==0){
+        VOLTAGE_ALERT_LED = ~VOLTAGE_ALERT_LED;
+      }
+    }
+
+    if (seconds_counter % 1 == 0 && !sensors_reading_in_progress && !sensors_reading_complete) {
+      setupTimer0(); // Set up and enable Timer0 for readings
+      startSensorReading();
+    }
+    
+    if (getSensorResults(&low_sensor_active, &high_sensor_active, &flow_sensor_active)) {
+
+      if (high_sensor_active) {
+        //VOLTAGE_ALERT_LED = 1;
+        pretankempty = false;
+      }
+      if (!low_sensor_active && !high_sensor_active) {
+        //VOLTAGE_ALERT_LED = 0;
+        pretankempty = true;
+      }
+      
+    }
+
+    if(pretankempty !=tankempty){
+      if(lastsensorcheck == 0){
+        lastsensorcheck = millis;
+      }else if(millis - lastsensorcheck >= sensorbuffer){
+        lastsensorcheck = 0;
+        tankempty = pretankempty;
+      }
+    }else if (lastsensorcheck != 0 && (millis - lastsensorcheck >= sensorbuffer)){
+      lastsensorcheck = 0;
+    } 
+
+    if(flow_sensor_active != flowactive){
+        if (lastflowcheck == 0) {
+          lastflowcheck = millis;
+        } else if (millis - lastflowcheck >= sensorbuffer) {
+          lastflowcheck = 0;
+          flowactive = flow_sensor_active;
+        }
+      }else if(lastflowcheck != 0 &&(millis - lastflowcheck >= sensorbuffer)){
+        lastflowcheck = 0;
+      }
+
 }
