@@ -56,17 +56,16 @@ unsigned long last_millis = 0;
 unsigned long lastdryruncheck = 0;
 unsigned long motorstarttime = 0;
 unsigned long lastvoltageerror = 0;
-unsigned int maxvoltageerrortime = 10;
+const unsigned int maxvoltageerrortime = 15 * 60;
 
-unsigned int minvoltagelimit = 200;
-unsigned int maxvoltagelimit = 230;
-unsigned int minimumrunningvoltage = 170;
-unsigned int maximumrinningvoltage = 285;
+const unsigned int minvoltagelimit = 185;
+const unsigned int maxvoltagelimit = 265;
+const unsigned int minimumrunningvoltage = 165;
+const unsigned int maximumrinningvoltage = 285;
 
 uint8_t maxruntimeindex = 3;
-uint16_t maxruntime[5] = {30, 45, 60, 120, 0xFFFF};
+const uint16_t maxruntime[5] = {30 * 60, 45 * 60, 60 * 60, 120 * 60, 0xFFFF};
 
-bool to = 0;
 bool smc = 0;
 bool settingsmode = 0;
 
@@ -94,7 +93,8 @@ bool tankempty = false;
 bool pretankempty = false;
 bool flowactive = false;
 bool preflowactive = false;
-unsigned int sensorbuffer = 10000;
+
+const unsigned int sensorbuffer = 10000;
 unsigned int lastflowcheck = 0;
 unsigned long lastsensorcheck = 0;
 
@@ -140,13 +140,6 @@ void main(void) {
 
   // Initialize the system
   initSystem();
-
-  // EEPROM wasn't properly initialized, set defaults
-  // maxruntimeindex = 2; // Default threshold
-  minvoltagelimit = 200;
-  maxvoltagelimit = 240;
-  minimumrunningvoltage = 190;
-  maximumrinningvoltage = 250;
   maxruntimeindex = EEPROM_Read(ADDR_TIMOUT_INDEX);
 
   // Save defaults to EEPROM
@@ -272,7 +265,7 @@ void main(void) {
         trigger_buzzer(1000);
       }
       if (motorrunning) {
-        if (seconds_counter - motorstarttime >= maxruntime[4]) {
+        if (seconds_counter - motorstarttime >= maxruntime[maxruntimeindex]) {
           timeouterror = true;
         }
         if (!flowactive) {
@@ -294,9 +287,10 @@ void main(void) {
           DRY_RUN_LED = 0;
         }
 
-         if (voltage > maximumrinningvoltage || voltage < minimumrunningvoltage) {
+        if (voltage > maximumrinningvoltage ||
+            voltage < minimumrunningvoltage) {
           voltageerror = true;
-         }
+        }
       }
     } else {
       if (motorrunning) {
@@ -311,7 +305,7 @@ void main(void) {
     if (dryrunerror) {
       motorrunning = false;
     }
-    
+
     if (!motorrunning) {
       if (voltage > maxvoltagelimit || voltage < minvoltagelimit) {
         voltageerror = true;
@@ -328,25 +322,25 @@ void main(void) {
       }
     }
 
-
-
     if (voltageerror) {
       if (lastvoltageerror == 0) {
         lastvoltageerror = seconds_counter;
       } else if (seconds_counter - lastvoltageerror >= maxvoltageerrortime) {
         if (voltage > maxvoltagelimit || voltage < minvoltagelimit) {
-        voltageerror = true;
-      }else{
-        voltageerror = false;
-
-      }
+          voltageerror = true;
+        } else {
+          voltageerror = false;
+        }
         lastvoltageerror = 0;
       }
 
       motorrunning = false;
+      MAINS_LED = 0;
     } else if (lastvoltageerror != 0 &&
                (seconds_counter - lastvoltageerror >= maxvoltageerrortime)) {
       lastvoltageerror = 0;
+    } else {
+      MAINS_LED = 1;
     }
 
     dispinfo(100);
@@ -738,35 +732,35 @@ void lcd_data(unsigned char data) {
 }
 
 void lcd_display_int(int num) {
-    // Handle negative numbers if needed
-    if (num < 0) {
-        lcd_data('-');
-        num = -num;
-    }
-    
-    // Limit to 999 for display simplicity
-    if (num > 999)
-        num = 999;
-    
-    // Calculate digits
-    int hundreds = num / 100;
-    int tens = (num / 10) % 10;
-    int ones = num % 10;
-    
-    // Only display necessary digits
-    if (hundreds > 0) {
-        // Number is 100-999, display all three digits
-        lcd_data('0' + hundreds);
-        lcd_data('0' + tens);
-        lcd_data('0' + ones);
-    } else if (tens > 0) {
-        // Number is 10-99, display only tens and ones
-        lcd_data('0' + tens);
-        lcd_data('0' + ones);
-    } else {
-        // Number is 0-9, display only ones digit
-        lcd_data('0' + ones);
-    }
+  // Handle negative numbers if needed
+  if (num < 0) {
+    lcd_data('-');
+    num = -num;
+  }
+
+  // Limit to 999 for display simplicity
+  if (num > 999)
+    num = 999;
+
+  // Calculate digits
+  int hundreds = num / 100;
+  int tens = (num / 10) % 10;
+  int ones = num % 10;
+
+  // Only display necessary digits
+  if (hundreds > 0) {
+    // Number is 100-999, display all three digits
+    lcd_data('0' + hundreds);
+    lcd_data('0' + tens);
+    lcd_data('0' + ones);
+  } else if (tens > 0) {
+    // Number is 10-99, display only tens and ones
+    lcd_data('0' + tens);
+    lcd_data('0' + ones);
+  } else {
+    // Number is 0-9, display only ones digit
+    lcd_data('0' + ones);
+  }
 }
 
 void getsensorreadings(void) {
@@ -776,8 +770,6 @@ void getsensorreadings(void) {
   voltageraw = voltagesum >> 4; // Average the readings
   voltagesum = 0;
   voltage = (((uint32_t)voltageraw * 235) / 1023) + 85;
-
-  
 
   if (seconds_counter % 1 == 0 && !sensors_reading_in_progress &&
       !sensors_reading_complete) {
@@ -874,10 +866,9 @@ void dispinfo(uint8_t refreshtime) {
     lcd_set_cursor(1, 0);
     lcd_display_int(voltage);
     lcd_set_cursor(1, 4);
-    lcd_display_int(maxruntimeindex+1);
+    lcd_display_int(maxruntimeindex + 1);
     lcd_set_cursor(1, 7);
     lcd_display_int(seconds_counter - motorstarttime);
- 
 
     lcd_set_cursor(0, 0);
     lcd_display_bool_binary(low_sensor_active);
@@ -892,6 +883,5 @@ void dispinfo(uint8_t refreshtime) {
     lcd_set_cursor(0, 13);
     lcd_display_int(seconds_counter - lastdryruncheck);
 
-
-  }//*/
+  } //*/
 }
