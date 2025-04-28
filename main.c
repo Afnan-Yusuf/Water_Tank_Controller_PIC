@@ -49,6 +49,8 @@
 #define LCD_D5 PORTBbits.RB1
 #define LCD_D6 PORTBbits.RB2
 
+const int  blinkdelay = 100;
+
 volatile unsigned long seconds_counter = 0;
 volatile unsigned long millis = 0;
 unsigned long last_millis = 0;
@@ -56,7 +58,7 @@ unsigned long last_millis = 0;
 unsigned long lastdryruncheck = 0;
 unsigned long motorstarttime = 0;
 unsigned long lastvoltageerror = 0;
-const unsigned int maxvoltageerrortime = 15 * 60;
+const unsigned int maxvoltageerrortime = 15;
 
 const unsigned int minvoltagelimit = 185;
 const unsigned int maxvoltagelimit = 265;
@@ -64,7 +66,7 @@ const unsigned int minimumrunningvoltage = 165;
 const unsigned int maximumrinningvoltage = 285;
 
 uint8_t maxruntimeindex = 3;
-const uint16_t maxruntime[5] = {30 * 60, 45 * 60, 60 * 60, 120 * 60, 0xFFFF};
+const uint16_t maxruntime[5] = {30 , 45 , 60 , 120 , 0xFFFF};
 
 bool smc = 0;
 bool settingsmode = 0;
@@ -95,7 +97,7 @@ bool flowactive = false;
 bool preflowactive = false;
 
 const unsigned int sensorbuffer = 10000;
-unsigned int lastflowcheck = 0;
+unsigned long lastflowcheck = 0;
 unsigned long lastsensorcheck = 0;
 
 unsigned long buzzer_start_time = 0;
@@ -140,14 +142,9 @@ void main(void) {
 
   // Initialize the system
   initSystem();
-  maxruntimeindex = EEPROM_Read(ADDR_TIMOUT_INDEX);
-
-  // Save defaults to EEPROM
-  // saveSettings(maxruntimeindex, minvoltagelimit, maxvoltagelimit,
-  //              minimumrunningvoltage, maximumrinningvoltage);
+  maxruntimeindex = 4;
 
   potraw = readADC(dryrunpotchannel);
-  // dryruntime = 30000;
   dryruntime = (((uint32_t)potraw * 480) / 1023) + 120;
   ///*
   for (uint8_t i = 0; i < 10; i++) {
@@ -167,12 +164,12 @@ void main(void) {
         }
       }
     }
-    __delay_ms(1000);
+    __delay_ms(blinkdelay);
     MAINS_LED = 0;
     MOTOR_ON_LED = 0;
     DRY_RUN_LED = 0;
     VOLTAGE_ALERT_LED = 0;
-    __delay_ms(1000);
+    __delay_ms(blinkdelay);
   }
   //*/
   trigger_buzzer(3000);
@@ -788,6 +785,11 @@ void getsensorreadings(void) {
       // VOLTAGE_ALERT_LED = 0;
       pretankempty = true;
     }
+    if(flow_sensor_active){
+      preflowactive = true;
+    }else{
+      preflowactive = false;
+    }
   }
 
   if (pretankempty != tankempty) {
@@ -797,21 +799,22 @@ void getsensorreadings(void) {
       lastsensorcheck = 0;
       tankempty = pretankempty;
     }
-  } else if (lastsensorcheck != 0 &&
-             (millis - lastsensorcheck >= sensorbuffer)) {
+  } else if (lastsensorcheck != 0 && (millis - lastsensorcheck >= sensorbuffer)) {
     lastsensorcheck = 0;
   }
 
-  if (flow_sensor_active != flowactive) {
+  if (preflowactive != flowactive) {
     if (lastflowcheck == 0) {
       lastflowcheck = millis;
     } else if (millis - lastflowcheck >= sensorbuffer) {
       lastflowcheck = 0;
-      flowactive = flow_sensor_active;
+      flowactive = preflowactive;
     }
-  } else if (lastflowcheck != 0 && (millis - lastflowcheck >= sensorbuffer)) {
+  }else if (lastflowcheck != 0 && (millis - lastflowcheck >= sensorbuffer)) {
     lastflowcheck = 0;
   }
+
+
   if ((millis - last_millis) >= 1000) {
     seconds_counter++;
     last_millis = millis;
@@ -825,6 +828,7 @@ void lcd_display_bool_binary(bool value) {
     lcd_data('0');
   }
 }
+
 
 void dispinfo(uint8_t refreshtime) {
   /*
@@ -869,6 +873,9 @@ void dispinfo(uint8_t refreshtime) {
     lcd_display_int(maxruntimeindex + 1);
     lcd_set_cursor(1, 7);
     lcd_display_int(seconds_counter - motorstarttime);
+    lcd_set_cursor(1, 11);
+    lcd_display_bool_binary(voltageerror);
+
 
     lcd_set_cursor(0, 0);
     lcd_display_bool_binary(low_sensor_active);
@@ -881,7 +888,7 @@ void dispinfo(uint8_t refreshtime) {
     lcd_set_cursor(0, 8);
     lcd_display_int(dryruntime);
     lcd_set_cursor(0, 13);
-    lcd_display_int(seconds_counter - lastdryruncheck);
+    lcd_display_int(lastflowcheck/1000);
 
   } //*/
 }
