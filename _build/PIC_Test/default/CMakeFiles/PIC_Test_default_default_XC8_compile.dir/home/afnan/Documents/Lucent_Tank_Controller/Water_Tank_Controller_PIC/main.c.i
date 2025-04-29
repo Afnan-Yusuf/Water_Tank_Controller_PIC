@@ -1,4 +1,4 @@
-# 1 "/opt/microchip/xc8/v3.00/pic/sources/c99/pic/__eeprom.c"
+# 1 "/home/afnan/Documents/Lucent_Tank_Controller/Water_Tank_Controller_PIC/main.c"
 # 1 "<built-in>" 1
 # 1 "<built-in>" 3
 # 285 "<built-in>" 3
@@ -6,7 +6,119 @@
 # 1 "<built-in>" 2
 # 1 "/opt/microchip/xc8/v3.00/pic/include/language_support.h" 1 3
 # 2 "<built-in>" 2
-# 1 "/opt/microchip/xc8/v3.00/pic/sources/c99/pic/__eeprom.c" 2
+# 1 "/home/afnan/Documents/Lucent_Tank_Controller/Water_Tank_Controller_PIC/main.c" 2
+
+# 1 "/opt/microchip/xc8/v3.00/pic/include/builtins.h" 1 3
+
+
+
+# 1 "/opt/microchip/xc8/v3.00/pic/include/c99/stdint.h" 1 3
+
+
+
+# 1 "/opt/microchip/xc8/v3.00/pic/include/c99/musl_xc8.h" 1 3
+# 5 "/opt/microchip/xc8/v3.00/pic/include/c99/stdint.h" 2 3
+# 26 "/opt/microchip/xc8/v3.00/pic/include/c99/stdint.h" 3
+# 1 "/opt/microchip/xc8/v3.00/pic/include/c99/bits/alltypes.h" 1 3
+# 133 "/opt/microchip/xc8/v3.00/pic/include/c99/bits/alltypes.h" 3
+typedef unsigned short uintptr_t;
+# 148 "/opt/microchip/xc8/v3.00/pic/include/c99/bits/alltypes.h" 3
+typedef short intptr_t;
+# 164 "/opt/microchip/xc8/v3.00/pic/include/c99/bits/alltypes.h" 3
+typedef signed char int8_t;
+
+
+
+
+typedef short int16_t;
+
+
+
+
+typedef __int24 int24_t;
+
+
+
+
+typedef long int32_t;
+# 192 "/opt/microchip/xc8/v3.00/pic/include/c99/bits/alltypes.h" 3
+typedef int32_t intmax_t;
+
+
+
+
+
+
+
+typedef unsigned char uint8_t;
+
+
+
+
+typedef unsigned short uint16_t;
+
+
+
+
+typedef __uint24 uint24_t;
+
+
+
+
+typedef unsigned long uint32_t;
+# 233 "/opt/microchip/xc8/v3.00/pic/include/c99/bits/alltypes.h" 3
+typedef uint32_t uintmax_t;
+# 27 "/opt/microchip/xc8/v3.00/pic/include/c99/stdint.h" 2 3
+
+typedef int8_t int_fast8_t;
+
+
+
+
+typedef int8_t int_least8_t;
+typedef int16_t int_least16_t;
+
+typedef int24_t int_least24_t;
+typedef int24_t int_fast24_t;
+
+typedef int32_t int_least32_t;
+
+
+
+
+typedef uint8_t uint_fast8_t;
+
+
+
+
+typedef uint8_t uint_least8_t;
+typedef uint16_t uint_least16_t;
+
+typedef uint24_t uint_least24_t;
+typedef uint24_t uint_fast24_t;
+
+typedef uint32_t uint_least32_t;
+# 148 "/opt/microchip/xc8/v3.00/pic/include/c99/stdint.h" 3
+# 1 "/opt/microchip/xc8/v3.00/pic/include/c99/bits/stdint.h" 1 3
+typedef int16_t int_fast16_t;
+typedef int32_t int_fast32_t;
+typedef uint16_t uint_fast16_t;
+typedef uint32_t uint_fast32_t;
+# 149 "/opt/microchip/xc8/v3.00/pic/include/c99/stdint.h" 2 3
+# 5 "/opt/microchip/xc8/v3.00/pic/include/builtins.h" 2 3
+
+
+#pragma intrinsic(__nop)
+extern void __nop(void);
+# 19 "/opt/microchip/xc8/v3.00/pic/include/builtins.h" 3
+#pragma intrinsic(_delay)
+extern __attribute__((nonreentrant)) void _delay(uint32_t);
+#pragma intrinsic(_delaywdt)
+extern __attribute__((nonreentrant)) void _delaywdt(uint32_t);
+# 3 "/home/afnan/Documents/Lucent_Tank_Controller/Water_Tank_Controller_PIC/main.c" 2
+# 1 "/opt/microchip/xc8/v3.00/pic/include/c99/stdbool.h" 1 3
+# 4 "/home/afnan/Documents/Lucent_Tank_Controller/Water_Tank_Controller_PIC/main.c" 2
+
 # 1 "/opt/microchip/xc8/v3.00/pic/include/xc.h" 1 3
 # 18 "/opt/microchip/xc8/v3.00/pic/include/xc.h" 3
 extern const char __xc8_OPTIM_SPEED;
@@ -19,16 +131,7 @@ extern double __fpnormalize(double);
 
 
 # 1 "/opt/microchip/xc8/v3.00/pic/include/c99/stdlib.h" 1 3
-
-
-
-# 1 "/opt/microchip/xc8/v3.00/pic/include/c99/musl_xc8.h" 1 3
-# 5 "/opt/microchip/xc8/v3.00/pic/include/c99/stdlib.h" 2 3
-
-
-
-
-
+# 10 "/opt/microchip/xc8/v3.00/pic/include/c99/stdlib.h" 3
 # 1 "/opt/microchip/xc8/v3.00/pic/include/c99/features.h" 1 3
 # 11 "/opt/microchip/xc8/v3.00/pic/include/c99/stdlib.h" 2 3
 # 21 "/opt/microchip/xc8/v3.00/pic/include/c99/stdlib.h" 3
@@ -37,10 +140,6 @@ extern double __fpnormalize(double);
 typedef long int wchar_t;
 # 128 "/opt/microchip/xc8/v3.00/pic/include/c99/bits/alltypes.h" 3
 typedef unsigned size_t;
-# 174 "/opt/microchip/xc8/v3.00/pic/include/c99/bits/alltypes.h" 3
-typedef __int24 int24_t;
-# 210 "/opt/microchip/xc8/v3.00/pic/include/c99/bits/alltypes.h" 3
-typedef __uint24 uint24_t;
 # 22 "/opt/microchip/xc8/v3.00/pic/include/c99/stdlib.h" 2 3
 
 int atoi (const char *);
@@ -122,97 +221,11 @@ uldiv_t uldiv (unsigned long, unsigned long);
 #pragma intrinsic(__builtin_software_breakpoint)
 extern void __builtin_software_breakpoint(void);
 # 24 "/opt/microchip/xc8/v3.00/pic/include/xc.h" 2 3
-# 1 "/opt/microchip/xc8/v3.00/pic/include/builtins.h" 1 3
-
-
-
-# 1 "/opt/microchip/xc8/v3.00/pic/include/c99/stdint.h" 1 3
-# 26 "/opt/microchip/xc8/v3.00/pic/include/c99/stdint.h" 3
-# 1 "/opt/microchip/xc8/v3.00/pic/include/c99/bits/alltypes.h" 1 3
-# 133 "/opt/microchip/xc8/v3.00/pic/include/c99/bits/alltypes.h" 3
-typedef unsigned short uintptr_t;
-# 148 "/opt/microchip/xc8/v3.00/pic/include/c99/bits/alltypes.h" 3
-typedef short intptr_t;
-# 164 "/opt/microchip/xc8/v3.00/pic/include/c99/bits/alltypes.h" 3
-typedef signed char int8_t;
 
 
 
 
-typedef short int16_t;
-# 179 "/opt/microchip/xc8/v3.00/pic/include/c99/bits/alltypes.h" 3
-typedef long int32_t;
-# 192 "/opt/microchip/xc8/v3.00/pic/include/c99/bits/alltypes.h" 3
-typedef int32_t intmax_t;
-
-
-
-
-
-
-
-typedef unsigned char uint8_t;
-
-
-
-
-typedef unsigned short uint16_t;
-# 215 "/opt/microchip/xc8/v3.00/pic/include/c99/bits/alltypes.h" 3
-typedef unsigned long uint32_t;
-# 233 "/opt/microchip/xc8/v3.00/pic/include/c99/bits/alltypes.h" 3
-typedef uint32_t uintmax_t;
-# 27 "/opt/microchip/xc8/v3.00/pic/include/c99/stdint.h" 2 3
-
-typedef int8_t int_fast8_t;
-
-
-
-
-typedef int8_t int_least8_t;
-typedef int16_t int_least16_t;
-
-typedef int24_t int_least24_t;
-typedef int24_t int_fast24_t;
-
-typedef int32_t int_least32_t;
-
-
-
-
-typedef uint8_t uint_fast8_t;
-
-
-
-
-typedef uint8_t uint_least8_t;
-typedef uint16_t uint_least16_t;
-
-typedef uint24_t uint_least24_t;
-typedef uint24_t uint_fast24_t;
-
-typedef uint32_t uint_least32_t;
-# 148 "/opt/microchip/xc8/v3.00/pic/include/c99/stdint.h" 3
-# 1 "/opt/microchip/xc8/v3.00/pic/include/c99/bits/stdint.h" 1 3
-typedef int16_t int_fast16_t;
-typedef int32_t int_fast32_t;
-typedef uint16_t uint_fast16_t;
-typedef uint32_t uint_fast32_t;
-# 149 "/opt/microchip/xc8/v3.00/pic/include/c99/stdint.h" 2 3
-# 5 "/opt/microchip/xc8/v3.00/pic/include/builtins.h" 2 3
-
-
-#pragma intrinsic(__nop)
-extern void __nop(void);
-# 19 "/opt/microchip/xc8/v3.00/pic/include/builtins.h" 3
-#pragma intrinsic(_delay)
-extern __attribute__((nonreentrant)) void _delay(uint32_t);
-#pragma intrinsic(_delaywdt)
-extern __attribute__((nonreentrant)) void _delaywdt(uint32_t);
-# 25 "/opt/microchip/xc8/v3.00/pic/include/xc.h" 2 3
-
-
-
-# 1 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/pic.h" 1 3
+# 1 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/pic.h" 1 3
 
 
 
@@ -226,7 +239,7 @@ extern __attribute__((nonreentrant)) void _delaywdt(uint32_t);
 
 # 1 "/opt/microchip/xc8/v3.00/pic/include/xc.h" 1 3
 # 8 "/opt/microchip/xc8/v3.00/pic/include/htc.h" 2 3
-# 6 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/pic.h" 2 3
+# 6 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/pic.h" 2 3
 
 
 
@@ -234,12 +247,12 @@ extern __attribute__((nonreentrant)) void _delaywdt(uint32_t);
 
 
 
-# 1 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/pic_chip_select.h" 1 3
-# 693 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/pic_chip_select.h" 3
-# 1 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 1 3
-# 44 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 1 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/pic_chip_select.h" 1 3
+# 693 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/pic_chip_select.h" 3
+# 1 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 1 3
+# 44 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 # 1 "/opt/microchip/xc8/v3.00/pic/include/__at.h" 1 3
-# 45 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 2 3
+# 45 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 2 3
 
 
 
@@ -295,7 +308,7 @@ typedef union {
     };
 } STATUSbits_t;
 extern volatile STATUSbits_t STATUSbits __attribute__((address(0x003)));
-# 159 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 159 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char FSR __attribute__((address(0x004)));
 
 __asm("FSR equ 04h");
@@ -321,7 +334,7 @@ typedef union {
     };
 } PORTAbits_t;
 extern volatile PORTAbits_t PORTAbits __attribute__((address(0x005)));
-# 228 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 228 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char PORTB __attribute__((address(0x006)));
 
 __asm("PORTB equ 06h");
@@ -340,7 +353,7 @@ typedef union {
     };
 } PORTBbits_t;
 extern volatile PORTBbits_t PORTBbits __attribute__((address(0x006)));
-# 290 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 290 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char PORTC __attribute__((address(0x007)));
 
 __asm("PORTC equ 07h");
@@ -359,7 +372,7 @@ typedef union {
     };
 } PORTCbits_t;
 extern volatile PORTCbits_t PORTCbits __attribute__((address(0x007)));
-# 352 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 352 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char PORTE __attribute__((address(0x009)));
 
 __asm("PORTE equ 09h");
@@ -372,7 +385,7 @@ typedef union {
     };
 } PORTEbits_t;
 extern volatile PORTEbits_t PORTEbits __attribute__((address(0x009)));
-# 373 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 373 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char PCLATH __attribute__((address(0x00A)));
 
 __asm("PCLATH equ 0Ah");
@@ -404,7 +417,7 @@ typedef union {
     };
 } INTCONbits_t;
 extern volatile INTCONbits_t INTCONbits __attribute__((address(0x00B)));
-# 458 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 458 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char PIR1 __attribute__((address(0x00C)));
 
 __asm("PIR1 equ 0Ch");
@@ -422,7 +435,7 @@ typedef union {
     };
 } PIR1bits_t;
 extern volatile PIR1bits_t PIR1bits __attribute__((address(0x00C)));
-# 514 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 514 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char PIR2 __attribute__((address(0x00D)));
 
 __asm("PIR2 equ 0Dh");
@@ -441,7 +454,7 @@ typedef union {
     };
 } PIR2bits_t;
 extern volatile PIR2bits_t PIR2bits __attribute__((address(0x00D)));
-# 571 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 571 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned short TMR1 __attribute__((address(0x00E)));
 
 __asm("TMR1 equ 0Eh");
@@ -493,7 +506,7 @@ typedef union {
     };
 } T1CONbits_t;
 extern volatile T1CONbits_t T1CONbits __attribute__((address(0x010)));
-# 686 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 686 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char TMR2 __attribute__((address(0x011)));
 
 __asm("TMR2 equ 011h");
@@ -523,7 +536,7 @@ typedef union {
     };
 } T2CONbits_t;
 extern volatile T2CONbits_t T2CONbits __attribute__((address(0x012)));
-# 764 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 764 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char SSPBUF __attribute__((address(0x013)));
 
 __asm("SSPBUF equ 013h");
@@ -552,7 +565,7 @@ typedef union {
     };
 } SSPCONbits_t;
 extern volatile SSPCONbits_t SSPCONbits __attribute__((address(0x014)));
-# 841 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 841 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned short CCPR1 __attribute__((address(0x015)));
 
 __asm("CCPR1 equ 015h");
@@ -602,7 +615,7 @@ typedef union {
     };
 } CCP1CONbits_t;
 extern volatile CCP1CONbits_t CCP1CONbits __attribute__((address(0x017)));
-# 959 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 959 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char RCSTA __attribute__((address(0x018)));
 
 __asm("RCSTA equ 018h");
@@ -634,7 +647,7 @@ typedef union {
     };
 } RCSTAbits_t;
 extern volatile RCSTAbits_t RCSTAbits __attribute__((address(0x018)));
-# 1054 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 1054 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char TXREG __attribute__((address(0x019)));
 
 __asm("TXREG equ 019h");
@@ -691,7 +704,7 @@ typedef union {
     };
 } CCP2CONbits_t;
 extern volatile CCP2CONbits_t CCP2CONbits __attribute__((address(0x01D)));
-# 1159 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 1159 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char ADRESH __attribute__((address(0x01E)));
 
 __asm("ADRESH equ 01Eh");
@@ -731,7 +744,7 @@ typedef union {
     };
 } ADCON0bits_t;
 extern volatile ADCON0bits_t ADCON0bits __attribute__((address(0x01F)));
-# 1267 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 1267 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char OPTION_REG __attribute__((address(0x081)));
 
 __asm("OPTION_REG equ 081h");
@@ -753,7 +766,7 @@ typedef union {
     };
 } OPTION_REGbits_t;
 extern volatile OPTION_REGbits_t OPTION_REGbits __attribute__((address(0x081)));
-# 1337 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 1337 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char TRISA __attribute__((address(0x085)));
 
 __asm("TRISA equ 085h");
@@ -772,7 +785,7 @@ typedef union {
     };
 } TRISAbits_t;
 extern volatile TRISAbits_t TRISAbits __attribute__((address(0x085)));
-# 1399 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 1399 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char TRISB __attribute__((address(0x086)));
 
 __asm("TRISB equ 086h");
@@ -791,7 +804,7 @@ typedef union {
     };
 } TRISBbits_t;
 extern volatile TRISBbits_t TRISBbits __attribute__((address(0x086)));
-# 1461 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 1461 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char TRISC __attribute__((address(0x087)));
 
 __asm("TRISC equ 087h");
@@ -810,7 +823,7 @@ typedef union {
     };
 } TRISCbits_t;
 extern volatile TRISCbits_t TRISCbits __attribute__((address(0x087)));
-# 1523 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 1523 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char TRISE __attribute__((address(0x089)));
 
 __asm("TRISE equ 089h");
@@ -823,7 +836,7 @@ typedef union {
     };
 } TRISEbits_t;
 extern volatile TRISEbits_t TRISEbits __attribute__((address(0x089)));
-# 1544 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 1544 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char PIE1 __attribute__((address(0x08C)));
 
 __asm("PIE1 equ 08Ch");
@@ -841,7 +854,7 @@ typedef union {
     };
 } PIE1bits_t;
 extern volatile PIE1bits_t PIE1bits __attribute__((address(0x08C)));
-# 1600 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 1600 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char PIE2 __attribute__((address(0x08D)));
 
 __asm("PIE2 equ 08Dh");
@@ -860,7 +873,7 @@ typedef union {
     };
 } PIE2bits_t;
 extern volatile PIE2bits_t PIE2bits __attribute__((address(0x08D)));
-# 1657 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 1657 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char PCON __attribute__((address(0x08E)));
 
 __asm("PCON equ 08Eh");
@@ -879,7 +892,7 @@ typedef union {
     };
 } PCONbits_t;
 extern volatile PCONbits_t PCONbits __attribute__((address(0x08E)));
-# 1704 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 1704 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char OSCCON __attribute__((address(0x08F)));
 
 __asm("OSCCON equ 08Fh");
@@ -901,7 +914,7 @@ typedef union {
     };
 } OSCCONbits_t;
 extern volatile OSCCONbits_t OSCCONbits __attribute__((address(0x08F)));
-# 1769 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 1769 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char OSCTUNE __attribute__((address(0x090)));
 
 __asm("OSCTUNE equ 090h");
@@ -920,7 +933,7 @@ typedef union {
     };
 } OSCTUNEbits_t;
 extern volatile OSCTUNEbits_t OSCTUNEbits __attribute__((address(0x090)));
-# 1821 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 1821 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char SSPCON2 __attribute__((address(0x091)));
 
 __asm("SSPCON2 equ 091h");
@@ -939,7 +952,7 @@ typedef union {
     };
 } SSPCON2bits_t;
 extern volatile SSPCON2bits_t SSPCON2bits __attribute__((address(0x091)));
-# 1883 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 1883 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char PR2 __attribute__((address(0x092)));
 
 __asm("PR2 equ 092h");
@@ -977,7 +990,7 @@ typedef union {
     };
 } SSPMSKbits_t;
 extern volatile SSPMSKbits_t SSPMSKbits __attribute__((address(0x093)));
-# 1962 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 1962 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 typedef union {
     struct {
         unsigned MSK0 :1;
@@ -991,7 +1004,7 @@ typedef union {
     };
 } MSKbits_t;
 extern volatile MSKbits_t MSKbits __attribute__((address(0x093)));
-# 2019 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 2019 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char SSPSTAT __attribute__((address(0x094)));
 
 __asm("SSPSTAT equ 094h");
@@ -1047,7 +1060,7 @@ typedef union {
     };
 } SSPSTATbits_t;
 extern volatile SSPSTATbits_t SSPSTATbits __attribute__((address(0x094)));
-# 2188 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 2188 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char WPUB __attribute__((address(0x095)));
 
 __asm("WPUB equ 095h");
@@ -1069,7 +1082,7 @@ typedef union {
     };
 } WPUBbits_t;
 extern volatile WPUBbits_t WPUBbits __attribute__((address(0x095)));
-# 2258 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 2258 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char IOCB __attribute__((address(0x096)));
 
 __asm("IOCB equ 096h");
@@ -1091,7 +1104,7 @@ typedef union {
     };
 } IOCBbits_t;
 extern volatile IOCBbits_t IOCBbits __attribute__((address(0x096)));
-# 2328 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 2328 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char VRCON __attribute__((address(0x097)));
 
 __asm("VRCON equ 097h");
@@ -1113,7 +1126,7 @@ typedef union {
     };
 } VRCONbits_t;
 extern volatile VRCONbits_t VRCONbits __attribute__((address(0x097)));
-# 2398 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 2398 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char TXSTA __attribute__((address(0x098)));
 
 __asm("TXSTA equ 098h");
@@ -1141,7 +1154,7 @@ typedef union {
     };
 } TXSTAbits_t;
 extern volatile TXSTAbits_t TXSTAbits __attribute__((address(0x098)));
-# 2484 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 2484 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char SPBRG __attribute__((address(0x099)));
 
 __asm("SPBRG equ 099h");
@@ -1160,7 +1173,7 @@ typedef union {
     };
 } SPBRGbits_t;
 extern volatile SPBRGbits_t SPBRGbits __attribute__((address(0x099)));
-# 2546 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 2546 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char SPBRGH __attribute__((address(0x09A)));
 
 __asm("SPBRGH equ 09Ah");
@@ -1182,7 +1195,7 @@ typedef union {
     };
 } SPBRGHbits_t;
 extern volatile SPBRGHbits_t SPBRGHbits __attribute__((address(0x09A)));
-# 2616 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 2616 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char PWM1CON __attribute__((address(0x09B)));
 
 __asm("PWM1CON equ 09Bh");
@@ -1204,7 +1217,7 @@ typedef union {
     };
 } PWM1CONbits_t;
 extern volatile PWM1CONbits_t PWM1CONbits __attribute__((address(0x09B)));
-# 2686 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 2686 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char ECCPAS __attribute__((address(0x09C)));
 
 __asm("ECCPAS equ 09Ch");
@@ -1228,7 +1241,7 @@ typedef union {
     };
 } ECCPASbits_t;
 extern volatile ECCPASbits_t ECCPASbits __attribute__((address(0x09C)));
-# 2768 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 2768 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char PSTRCON __attribute__((address(0x09D)));
 
 __asm("PSTRCON equ 09Dh");
@@ -1244,7 +1257,7 @@ typedef union {
     };
 } PSTRCONbits_t;
 extern volatile PSTRCONbits_t PSTRCONbits __attribute__((address(0x09D)));
-# 2812 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 2812 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char ADRESL __attribute__((address(0x09E)));
 
 __asm("ADRESL equ 09Eh");
@@ -1267,7 +1280,7 @@ typedef union {
     };
 } ADCON1bits_t;
 extern volatile ADCON1bits_t ADCON1bits __attribute__((address(0x09F)));
-# 2853 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 2853 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char WDTCON __attribute__((address(0x105)));
 
 __asm("WDTCON equ 0105h");
@@ -1287,7 +1300,7 @@ typedef union {
     };
 } WDTCONbits_t;
 extern volatile WDTCONbits_t WDTCONbits __attribute__((address(0x105)));
-# 2906 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 2906 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char CM1CON0 __attribute__((address(0x107)));
 
 __asm("CM1CON0 equ 0107h");
@@ -1309,7 +1322,7 @@ typedef union {
     };
 } CM1CON0bits_t;
 extern volatile CM1CON0bits_t CM1CON0bits __attribute__((address(0x107)));
-# 2971 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 2971 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char CM2CON0 __attribute__((address(0x108)));
 
 __asm("CM2CON0 equ 0108h");
@@ -1331,7 +1344,7 @@ typedef union {
     };
 } CM2CON0bits_t;
 extern volatile CM2CON0bits_t CM2CON0bits __attribute__((address(0x108)));
-# 3036 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 3036 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char CM2CON1 __attribute__((address(0x109)));
 
 __asm("CM2CON1 equ 0109h");
@@ -1349,7 +1362,7 @@ typedef union {
     };
 } CM2CON1bits_t;
 extern volatile CM2CON1bits_t CM2CON1bits __attribute__((address(0x109)));
-# 3087 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 3087 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char EEDATA __attribute__((address(0x10C)));
 
 __asm("EEDATA equ 010Ch");
@@ -1401,7 +1414,7 @@ typedef union {
     };
 } SRCONbits_t;
 extern volatile SRCONbits_t SRCONbits __attribute__((address(0x185)));
-# 3177 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 3177 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char BAUDCTL __attribute__((address(0x187)));
 
 __asm("BAUDCTL equ 0187h");
@@ -1420,7 +1433,7 @@ typedef union {
     };
 } BAUDCTLbits_t;
 extern volatile BAUDCTLbits_t BAUDCTLbits __attribute__((address(0x187)));
-# 3229 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 3229 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char ANSEL __attribute__((address(0x188)));
 
 __asm("ANSEL equ 0188h");
@@ -1436,7 +1449,7 @@ typedef union {
     };
 } ANSELbits_t;
 extern volatile ANSELbits_t ANSELbits __attribute__((address(0x188)));
-# 3273 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 3273 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char ANSELH __attribute__((address(0x189)));
 
 __asm("ANSELH equ 0189h");
@@ -1453,7 +1466,7 @@ typedef union {
     };
 } ANSELHbits_t;
 extern volatile ANSELHbits_t ANSELHbits __attribute__((address(0x189)));
-# 3323 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 3323 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char EECON1 __attribute__((address(0x18C)));
 
 __asm("EECON1 equ 018Ch");
@@ -1470,11 +1483,11 @@ typedef union {
     };
 } EECON1bits_t;
 extern volatile EECON1bits_t EECON1bits __attribute__((address(0x18C)));
-# 3368 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 3368 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile unsigned char EECON2 __attribute__((address(0x18D)));
 
 __asm("EECON2 equ 018Dh");
-# 3385 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
+# 3385 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/proc/pic16f883.h" 3
 extern volatile __bit ABDEN __attribute__((address(0xC38)));
 
 
@@ -2526,9 +2539,9 @@ extern volatile __bit nW __attribute__((address(0x4A2)));
 
 
 extern volatile __bit nWRITE __attribute__((address(0x4A2)));
-# 694 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/pic_chip_select.h" 2 3
-# 14 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/pic.h" 2 3
-# 76 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/pic.h" 3
+# 694 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/pic_chip_select.h" 2 3
+# 14 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/pic.h" 2 3
+# 76 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/pic.h" 3
 __attribute__((__unsupported__("The " "FLASH_READ" " macro function is no longer supported. Please use the MPLAB X MCC."))) unsigned char __flash_read(unsigned short addr);
 
 __attribute__((__unsupported__("The " "FLASH_WRITE" " macro function is no longer supported. Please use the MPLAB X MCC."))) void __flash_write(unsigned short addr, unsigned short data);
@@ -2540,181 +2553,840 @@ __attribute__((__unsupported__("The " "FLASH_ERASE" " macro function is no longe
 # 114 "/opt/microchip/xc8/v3.00/pic/include/eeprom_routines.h" 3
 extern void eeprom_write(unsigned char addr, unsigned char value);
 extern unsigned char eeprom_read(unsigned char addr);
-# 84 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/pic.h" 2 3
-# 118 "/opt/microchip/mplabx/v6.20/packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/pic.h" 3
+# 84 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/pic.h" 2 3
+# 118 "/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8/pic/include/pic.h" 3
 extern __bank0 unsigned char __resetbits;
 extern __bank0 __bit __powerdown;
 extern __bank0 __bit __timeout;
 # 29 "/opt/microchip/xc8/v3.00/pic/include/xc.h" 2 3
-# 2 "/opt/microchip/xc8/v3.00/pic/sources/c99/pic/__eeprom.c" 2
+# 6 "/home/afnan/Documents/Lucent_Tank_Controller/Water_Tank_Controller_PIC/main.c" 2
 
 
+#pragma config FOSC = INTRC_NOCLKOUT
+#pragma config WDTE = OFF
+#pragma config PWRTE = ON
+#pragma config MCLRE = ON
+#pragma config CP = OFF
+#pragma config CPD = OFF
+#pragma config BOREN = ON
+#pragma config IESO = OFF
+#pragma config FCMEN = OFF
+#pragma config LVP = OFF
+# 52 "/home/afnan/Documents/Lucent_Tank_Controller/Water_Tank_Controller_PIC/main.c"
+const int blinkdelay = 100;
 
-void
-__eecpymem(volatile unsigned char *to, __eeprom unsigned char * from, unsigned char size)
-{
- volatile unsigned char *cp = to;
+volatile unsigned long seconds_counter = 0;
+volatile unsigned long millis = 0;
+unsigned long last_millis = 0;
 
- while (EECON1bits.WR) continue;
- EEADR = (unsigned char)from;
- while(size--) {
-  while (EECON1bits.WR) continue;
+unsigned long lastdryruncheck = 0;
+unsigned long motorstarttime = 0;
+unsigned long lastvoltageerror = 0;
+const unsigned int maxvoltageerrortime = 15;
 
-  EECON1 &= 0x7F;
+const unsigned int minvoltagelimit = 185;
+const unsigned int maxvoltagelimit = 265;
+const unsigned int minimumrunningvoltage = 165;
+const unsigned int maximumrinningvoltage = 285;
 
-  EECON1bits.RD = 1;
-  *cp++ = EEDATA;
-  ++EEADR;
- }
-# 36 "/opt/microchip/xc8/v3.00/pic/sources/c99/pic/__eeprom.c"
+uint8_t maxruntimeindex = 3;
+const uint16_t maxruntime[5] = {30 , 45 , 60 , 120 , 0xFFFF};
+
+_Bool smc = 0;
+_Bool settingsmode = 0;
+
+
+unsigned int potraw;
+unsigned int voltageraw;
+unsigned int dryruntime = 0;
+uint8_t voltage = 0;
+uint16_t voltagesum = 0;
+
+volatile uint8_t reading_count = 0;
+volatile uint8_t low_sensor_high_count = 0;
+volatile uint8_t high_sensor_high_count = 0;
+volatile uint8_t flow_sensor_high_count = 0;
+volatile _Bool sensors_reading_complete = 0;
+volatile _Bool sensors_reading_in_progress = 0;
+
+_Bool low_sensor_active, high_sensor_active, flow_sensor_active;
+_Bool mannualon = 0;
+_Bool voltageerror = 0;
+_Bool dryrunerror = 0;
+_Bool timeouterror = 0;
+_Bool motorrunning = 0;
+_Bool tankempty = 0;
+_Bool pretankempty = 0;
+_Bool flowactive = 0;
+_Bool preflowactive = 0;
+
+const unsigned int sensorbuffer = 10000;
+unsigned long lastflowcheck = 0;
+unsigned long lastsensorcheck = 0;
+
+unsigned long buzzer_start_time = 0;
+unsigned int buzzer_duration = 0;
+_Bool buzzer_active = 0;
+
+unsigned long lt = 0;
+unsigned long lastdispupdt = 0;
+
+_Bool check_button_press(void);
+void trigger_buzzer(unsigned int duration_seconds);
+void EEPROM_Write(unsigned char address, unsigned char data);
+unsigned char EEPROM_Read(unsigned char address);
+void EEPROM_Write16(unsigned char address, unsigned int data);
+unsigned int EEPROM_Read16(unsigned char address);
+_Bool loadSettings(unsigned char *value8bit, unsigned int *value16bit1,
+                  unsigned int *value16bit2, unsigned int *value16bit3,
+                  unsigned int *value16bit4);
+void saveSettings(unsigned char value8bit, unsigned int value16bit1,
+                  unsigned int value16bit2, unsigned int value16bit3,
+                  unsigned int value16bit4);
+void initSystem(void);
+unsigned int readADC(uint8_t channel);
+void init_timer(void);
+void __attribute__((picinterrupt(("")))) timer_isr(void);
+_Bool getSensorResults(_Bool *low_active, _Bool *high_active, _Bool *flow_active);
+void startSensorReading(void);
+void setupTimer0(void);
+void buzzer_update();
+void getsensorreadings(void);
+
+void initLCD(void);
+void lcd_cmd(unsigned char cmd);
+void lcd_data(unsigned char data);
+void lcd_string(const char *str);
+void lcd_set_cursor(unsigned char row, unsigned char col);
+void lcd_display_int(int num);
+void lcd_display_bool_binary(_Bool value);
+void dispinfo(uint8_t refreshtime);
+
+void main(void) {
+
+
+  initSystem();
+  maxruntimeindex = 4;
+
+  potraw = readADC(4);
+  dryruntime = (((uint32_t)potraw * 480) / 1023) + 120;
+
+  for (uint8_t i = 0; i < 10; i++) {
+    PORTAbits.RA0 = 1;
+    PORTAbits.RA1 = 1;
+    PORTAbits.RA2 = 1;
+    PORTAbits.RA4 = 1;
+    if (i == 0) {
+      if (PORTCbits.RC1 == 0) {
+        smc = 1;
+      }
+    } else if (i == 2) {
+      if (smc == 1) {
+        if (PORTCbits.RC1 == 0) {
+          settingsmode = 1;
+          i = 10;
+        }
+      }
+    }
+    _delay((unsigned long)((blinkdelay)*(8000000/4000.0)));
+    PORTAbits.RA0 = 0;
+    PORTAbits.RA1 = 0;
+    PORTAbits.RA2 = 0;
+    PORTAbits.RA4 = 0;
+    _delay((unsigned long)((blinkdelay)*(8000000/4000.0)));
+  }
+
+  trigger_buzzer(3000);
+  buzzer_update();
+
+  init_timer();
+  initLCD();
+
+  while (settingsmode) {
+    buzzer_update();
+
+    getsensorreadings();
+    potraw = readADC(4);
+    dryruntime = (((uint32_t)potraw * 480) / 1023) + 120;
+
+    if (PORTCbits.RC1 == 0) {
+      _Bool is_long_press = check_button_press();
+
+      if (is_long_press) {
+        tankempty = 1;
+        pretankempty = 1;
+
+      } else {
+        maxruntimeindex++;
+        if (maxruntimeindex >= 5) {
+          maxruntimeindex = 0;
+        }
+        EEPROM_Write(0x01, maxruntimeindex);
+      }
+    }
+    switch (maxruntimeindex) {
+    case 0:
+      PORTAbits.RA0 = 0;
+      PORTAbits.RA1 = 0;
+      PORTAbits.RA2 = 0;
+      PORTAbits.RA4 = 1;
+      break;
+    case 1:
+      PORTAbits.RA0 = 0;
+      PORTAbits.RA1 = 0;
+      PORTAbits.RA2 = 1;
+      PORTAbits.RA4 = 0;
+      break;
+    case 2:
+      PORTAbits.RA0 = 0;
+      PORTAbits.RA1 = 1;
+      PORTAbits.RA2 = 0;
+      PORTAbits.RA4 = 0;
+      break;
+    case 3:
+      PORTAbits.RA0 = 1;
+      PORTAbits.RA1 = 0;
+      PORTAbits.RA2 = 0;
+      PORTAbits.RA4 = 0;
+      break;
+    case 4:
+      PORTAbits.RA0 = 0;
+      PORTAbits.RA1 = 1;
+      PORTAbits.RA2 = 1;
+      PORTAbits.RA4 = 0;
+      break;
+    }
+
+    dispinfo(100);
+  }
+  while (1) {
+
+    if (PORTCbits.RC1 == 0) {
+      _Bool is_long_press = check_button_press();
+
+      if (is_long_press) {
+        tankempty = 1;
+        pretankempty = 1;
+
+      } else {
+        PORTAbits.RA2 = ~PORTAbits.RA2;
+      }
+    }
+
+    buzzer_update();
+
+    getsensorreadings();
+
+    if (tankempty) {
+      if (!timeouterror && !voltageerror && !dryrunerror && !motorrunning) {
+
+        PORTCbits.RC3 = 1;
+        PORTCbits.RC2 = 1;
+        motorstarttime = seconds_counter;
+        motorrunning = 1;
+        trigger_buzzer(1000);
+      }
+      if (motorrunning) {
+        if (seconds_counter - motorstarttime >= maxruntime[maxruntimeindex]) {
+          timeouterror = 1;
+        }
+
+        if (seconds_counter - motorstarttime >= 3){
+          PORTCbits.RC2 = 0;
+        }
+        if (!flowactive) {
+          if (seconds_counter % 2 == 0) {
+
+            PORTAbits.RA2 = 1;
+          } else {
+
+            PORTAbits.RA2 = 0;
+          }
+          if (lastdryruncheck == 0) {
+            lastdryruncheck = seconds_counter;
+          } else if (seconds_counter - lastdryruncheck >= dryruntime) {
+            dryrunerror = 1;
+            PORTAbits.RA2 = 1;
+          }
+        } else {
+          lastdryruncheck = 0;
+          PORTAbits.RA2 = 0;
+        }
+
+        if (voltage > maximumrinningvoltage ||
+            voltage < minimumrunningvoltage) {
+          voltageerror = 1;
+        }
+      }
+    } else {
+      if (motorrunning) {
+        motorrunning = 0;
+        mannualon = 0;
+        PORTCbits.RC3 = 0;
+      }
+    }
+    if (timeouterror) {
+      motorrunning = 0;
+    }
+    if (dryrunerror) {
+      motorrunning = 0;
+    }
+
+    if (!motorrunning) {
+      if (voltage > maxvoltagelimit || voltage < minvoltagelimit) {
+        voltageerror = 1;
+      }
+      PORTCbits.RC3 = 0;
+      PORTAbits.RA1 = 0;
+    } else {
+      PORTAbits.RA1 = 1;
+      PORTCbits.RC3 = 1;
+      if (millis - lt >= 20000) {
+        lt = millis;
+
+        trigger_buzzer(200);
+      }
+    }
+
+    if (voltageerror) {
+      if (lastvoltageerror == 0) {
+        lastvoltageerror = seconds_counter;
+      } else if (seconds_counter - lastvoltageerror >= maxvoltageerrortime) {
+        if (voltage > maxvoltagelimit || voltage < minvoltagelimit) {
+          voltageerror = 1;
+        } else {
+          voltageerror = 0;
+        }
+        lastvoltageerror = 0;
+      }
+
+      motorrunning = 0;
+      PORTAbits.RA0 = 0;
+    } else if (lastvoltageerror != 0 &&
+               (seconds_counter - lastvoltageerror >= maxvoltageerrortime)) {
+      lastvoltageerror = 0;
+    } else {
+      PORTAbits.RA0 = 1;
+    }
+
+    dispinfo(100);
+  }
 }
 
-void
-__memcpyee(__eeprom unsigned char * to, const unsigned char *from, unsigned char size)
-{
- const unsigned char *ptr =from;
+void initSystem(void) {
 
- while (EECON1bits.WR) continue;
- EEADR = (unsigned char)to - 1U;
+  OSCCONbits.IRCF = 0b111;
+  ANSEL = 0b00011000;
+  ANSELH = 0x00;
+  TRISA = 0b11101000;
+  TRISB = 0b00111000;
+  TRISC = 0b00000011;
 
- EECON1 &= 0x7F;
+  ADCON0 = 0b00001101;
+  ADCON1 = 0b10000000;
 
- while(size--) {
-  while (EECON1bits.WR) {
-   continue;
+  _delay((unsigned long)((10)*(8000000/4000.0)));
+  PORTA = 0x00;
+  PORTB = 0x00;
+  PORTC = 0x00;
+
+  PORTCbits.RC5 = 0;
+  PORTCbits.RC6 = 0;
+  PORTBbits.RB0 = 0;
+  PORTBbits.RB1 = 0;
+  PORTBbits.RB2 = 0;
+  PORTCbits.RC7 = 0;
+
+  PORTCbits.RC4 = 0;
+}
+
+unsigned int readADC(uint8_t channel) {
+
+  ADCON0 = (ADCON0 & 0b11000011) | ((uint8_t)(channel << 2));
+  _delay((unsigned long)((10)*(8000000/4000000.0)));
+  ADCON0bits.GO = 1;
+
+
+  while (ADCON0bits.GO)
+    ;
+
+
+  return ((unsigned int)ADRESH << 8) | ADRESL;
+}
+
+void setupTimer0(void) {
+  OPTION_REGbits.T0CS = 0;
+  OPTION_REGbits.PSA = 0;
+  OPTION_REGbits.PS = 0b011;
+
+
+
+
+
+
+  TMR0 = 6;
+  INTCONbits.TMR0IE = 1;
+}
+
+void startSensorReading(void) {
+  if (!sensors_reading_in_progress) {
+    reading_count = 0;
+    low_sensor_high_count = 0;
+    high_sensor_high_count = 0;
+    flow_sensor_high_count = 0;
+    sensors_reading_complete = 0;
+    sensors_reading_in_progress = 1;
   }
-  EEDATA = *ptr++;
-  ++EEADR;
-  STATUSbits.CARRY = 0;
-  if (INTCONbits.GIE) {
-   STATUSbits.CARRY = 1;
+}
+
+_Bool getSensorResults(_Bool *low_active, _Bool *high_active, _Bool *flow_active) {
+  if (sensors_reading_complete) {
+    *low_active = (low_sensor_high_count < 45);
+    *high_active = (high_sensor_high_count < 45);
+    *flow_active = (flow_sensor_high_count < 45);
+    sensors_reading_complete = 0;
+    return 1;
   }
-  INTCONbits.GIE = 0;
+  return 0;
+}
+
+void __attribute__((picinterrupt(("")))) isr(void) {
+
+  if (PIR1bits.TMR1IF) {
+    millis++;
+    PIR1bits.TMR1IF = 0;
+    TMR1H = 255;
+    TMR1L = 14;
+  }
+
+  if (INTCONbits.TMR0IF) {
+
+    TMR0 = 6;
+    INTCONbits.TMR0IF = 0;
+
+
+    if (sensors_reading_in_progress) {
+
+      if (PORTBbits.RB5)
+        low_sensor_high_count++;
+      if (PORTBbits.RB4)
+        high_sensor_high_count++;
+      if (PORTBbits.RB3)
+        flow_sensor_high_count++;
+
+      reading_count++;
+
+
+      if (reading_count >= 50) {
+        sensors_reading_in_progress = 0;
+        sensors_reading_complete = 1;
+        INTCONbits.TMR0IE =
+            0;
+      }
+    }
+  }
+}
+
+void init_timer(void) {
+  T1CON = 0b00110000;
+
+  TMR1H = 255;
+  TMR1L = 14;
+
+  PIE1bits.TMR1IE = 1;
+  INTCONbits.PEIE = 1;
+  INTCONbits.GIE = 1;
+
+  T1CONbits.TMR1ON = 1;
+}
+
+void EEPROM_Write(unsigned char address, unsigned char data) {
+  while (EECON1bits.WR)
+    ;
+
+  EEADR = address;
+  EEDATA = data;
+
+  EECON1bits.EEPGD = 0;
   EECON1bits.WREN = 1;
+
+  INTCONbits.GIE = 0;
   EECON2 = 0x55;
   EECON2 = 0xAA;
   EECON1bits.WR = 1;
+
+  while (EECON1bits.WR)
+    ;
+
   EECON1bits.WREN = 0;
-  if (STATUSbits.CARRY) {
-   INTCONbits.GIE = 1;
+  INTCONbits.GIE = 1;
+}
+
+unsigned char EEPROM_Read(unsigned char address) {
+  while (EECON1bits.WR)
+    ;
+  EEADR = address;
+  EECON1bits.EEPGD = 0;
+  EECON1bits.RD = 1;
+  return EEDATA;
+}
+
+void EEPROM_Write16(unsigned char address, unsigned int data) {
+  EEPROM_Write(address, data & 0xFF);
+  EEPROM_Write(address + 1, data >> 8);
+}
+
+unsigned int EEPROM_Read16(unsigned char address) {
+  unsigned int result;
+  result = EEPROM_Read(address);
+  result |= ((unsigned int)EEPROM_Read(address + 1)) << 8;
+  return result;
+}
+
+_Bool loadSettings(unsigned char *value8bit, unsigned int *value16bit1,
+                  unsigned int *value16bit2, unsigned int *value16bit3,
+                  unsigned int *value16bit4) {
+  if (EEPROM_Read(0x00) != 0xAA) {
+    return 0;
   }
- }
-# 101 "/opt/microchip/xc8/v3.00/pic/sources/c99/pic/__eeprom.c"
+  *value8bit = EEPROM_Read(0x01);
+  *value16bit1 = EEPROM_Read16(0x02);
+  *value16bit2 = EEPROM_Read16(0x04);
+  *value16bit3 = EEPROM_Read16(0x06);
+  *value16bit4 = EEPROM_Read16(0x08);
+  return 1;
 }
 
-unsigned char
-__eetoc(__eeprom void *addr)
-{
- unsigned char data;
- __eecpymem((unsigned char *) &data,addr,1);
- return data;
+void saveSettings(unsigned char value8bit, unsigned int value16bit1,
+                  unsigned int value16bit2, unsigned int value16bit3,
+                  unsigned int value16bit4) {
+
+  EEPROM_Write(0x01, value8bit);
+  EEPROM_Write16(0x02, value16bit1);
+  EEPROM_Write16(0x04, value16bit2);
+  EEPROM_Write16(0x06, value16bit3);
+  EEPROM_Write16(0x08, value16bit4);
+  EEPROM_Write(0x00, 0xAA);
 }
 
-unsigned int
-__eetoi(__eeprom void *addr)
-{
- unsigned int data;
- __eecpymem((unsigned char *) &data,addr,2);
- return data;
+void trigger_buzzer(unsigned int duration_seconds) {
+  if (!buzzer_active) {
+    PORTCbits.RC4 = 1;
+    buzzer_start_time = millis;
+    buzzer_duration = duration_seconds;
+    buzzer_active = 1;
+  }
 }
 
-#pragma warning push
-#pragma warning disable 2040
-__uint24
-__eetom(__eeprom void *addr)
-{
- __uint24 data;
- __eecpymem((unsigned char *) &data,addr,3);
- return data;
-}
-#pragma warning pop
-
-unsigned long
-__eetol(__eeprom void *addr)
-{
- unsigned long data;
- __eecpymem((unsigned char *) &data,addr,4);
- return data;
+void buzzer_update() {
+  if (buzzer_active && (millis - buzzer_start_time >= buzzer_duration)) {
+    PORTCbits.RC4 = 0;
+    buzzer_active = 0;
+    buzzer_duration = 0;
+  }
 }
 
-#pragma warning push
-#pragma warning disable 1516
-unsigned long long
-__eetoo(__eeprom void *addr)
-{
- unsigned long long data;
- __eecpymem((unsigned char *) &data,addr,8);
- return data;
-}
-#pragma warning pop
+_Bool check_button_press(void) {
+  _Bool long_press = 0;
 
-unsigned char
-__ctoee(__eeprom void *addr, unsigned char data)
-{
- __memcpyee(addr,(unsigned char *) &data,1);
- return data;
-}
 
-unsigned int
-__itoee(__eeprom void *addr, unsigned int data)
-{
- __memcpyee(addr,(unsigned char *) &data,2);
- return data;
-}
+  if (PORTCbits.RC1 == 0) {
 
-#pragma warning push
-#pragma warning disable 2040
-__uint24
-__mtoee(__eeprom void *addr, __uint24 data)
-{
- __memcpyee(addr,(unsigned char *) &data,3);
- return data;
-}
-#pragma warning pop
+    _delay((unsigned long)((50)*(8000000/4000.0)));
 
-unsigned long
-__ltoee(__eeprom void *addr, unsigned long data)
-{
- __memcpyee(addr,(unsigned char *) &data,4);
- return data;
-}
 
-#pragma warning push
-#pragma warning disable 1516
-unsigned long long
-__otoee(__eeprom void *addr, unsigned long long data)
-{
- __memcpyee(addr,(unsigned char *) &data,8);
- return data;
-}
-#pragma warning pop
+    if (PORTCbits.RC1 == 0) {
 
-float
-__eetoft(__eeprom void *addr)
-{
- float data;
- __eecpymem((unsigned char *) &data,addr,3);
- return data;
+      unsigned int hold_count = 0;
+      unsigned int long_press_threshold = 20;
+
+
+      while (PORTCbits.RC1 == 0) {
+        _delay((unsigned long)((10)*(8000000/4000.0)));
+        hold_count++;
+
+
+        if (hold_count >= long_press_threshold) {
+          long_press = 1;
+
+
+
+
+          while (PORTCbits.RC1 == 0) {
+            _delay((unsigned long)((10)*(8000000/4000.0)));
+          }
+
+
+          _delay((unsigned long)((50)*(8000000/4000.0)));
+          break;
+        }
+      }
+
+
+      if (!long_press) {
+
+        _delay((unsigned long)((50)*(8000000/4000.0)));
+        return 0;
+      }
+
+      return 1;
+    }
+  }
+
+  return 0;
 }
 
-double
-__eetofl(__eeprom void *addr)
-{
- double data;
- __eecpymem((unsigned char *) &data,addr,4);
- return data;
+void initLCD(void) {
+
+  _delay((unsigned long)((15)*(8000000/4000.0)));
+
+
+
+  PORTCbits.RC5 = 0;
+  PORTCbits.RC7 = 0;
+  PORTBbits.RB2 = 0;
+  PORTBbits.RB1 = 1;
+  PORTBbits.RB0 = 1;
+  PORTCbits.RC6 = 1;
+  _delay((unsigned long)((1)*(8000000/4000000.0)));
+  PORTCbits.RC6 = 0;
+  _delay((unsigned long)((5)*(8000000/4000.0)));
+
+
+  PORTCbits.RC6 = 1;
+  _delay((unsigned long)((1)*(8000000/4000000.0)));
+  PORTCbits.RC6 = 0;
+  _delay((unsigned long)((1)*(8000000/4000.0)));
+
+
+  PORTCbits.RC6 = 1;
+  _delay((unsigned long)((1)*(8000000/4000000.0)));
+  PORTCbits.RC6 = 0;
+  _delay((unsigned long)((1)*(8000000/4000.0)));
+
+
+  PORTCbits.RC7 = 0;
+  PORTBbits.RB2 = 0;
+  PORTBbits.RB1 = 1;
+  PORTBbits.RB0 = 0;
+  PORTCbits.RC6 = 1;
+  _delay((unsigned long)((1)*(8000000/4000000.0)));
+  PORTCbits.RC6 = 0;
+  _delay((unsigned long)((1)*(8000000/4000.0)));
+
+
+
+  lcd_cmd(0x28);
+
+
+  lcd_cmd(0x08);
+
+
+  lcd_cmd(0x01);
+  _delay((unsigned long)((2)*(8000000/4000.0)));
+
+
+  lcd_cmd(0x06);
+
+
+  lcd_cmd(0x0C);
 }
 
-float
-__fttoee(__eeprom void *addr, float data)
-{
- __memcpyee(addr,(unsigned char *) &data,3);
- return data;
+void lcd_cmd(unsigned char cmd) {
+  PORTCbits.RC5 = 0;
+
+
+  PORTCbits.RC7 = (cmd & 0x80) ? 1 : 0;
+  PORTBbits.RB2 = (cmd & 0x40) ? 1 : 0;
+  PORTBbits.RB1 = (cmd & 0x20) ? 1 : 0;
+  PORTBbits.RB0 = (cmd & 0x10) ? 1 : 0;
+
+  PORTCbits.RC6 = 1;
+  _delay((unsigned long)((1)*(8000000/4000000.0)));
+  PORTCbits.RC6 = 0;
+  _delay((unsigned long)((100)*(8000000/4000000.0)));
+
+
+  PORTCbits.RC7 = (cmd & 0x08) ? 1 : 0;
+  PORTBbits.RB2 = (cmd & 0x04) ? 1 : 0;
+  PORTBbits.RB1 = (cmd & 0x02) ? 1 : 0;
+  PORTBbits.RB0 = (cmd & 0x01) ? 1 : 0;
+
+  PORTCbits.RC6 = 1;
+  _delay((unsigned long)((1)*(8000000/4000000.0)));
+  PORTCbits.RC6 = 0;
+  _delay((unsigned long)((100)*(8000000/4000000.0)));
 }
 
-double
-__fltoee(__eeprom void *addr, double data)
-{
- __memcpyee(addr,(unsigned char *) &data,4);
- return data;
+void lcd_set_cursor(unsigned char row, unsigned char col) {
+  unsigned char address;
+
+
+  if (row == 0) {
+    address = 0x80 + col;
+  } else {
+    address = 0xC0 + col;
+  }
+
+  lcd_cmd(address);
+}
+
+void lcd_data(unsigned char data) {
+  PORTCbits.RC5 = 1;
+
+
+  PORTCbits.RC7 = (data & 0x80) ? 1 : 0;
+  PORTBbits.RB2 = (data & 0x40) ? 1 : 0;
+  PORTBbits.RB1 = (data & 0x20) ? 1 : 0;
+  PORTBbits.RB0 = (data & 0x10) ? 1 : 0;
+
+  PORTCbits.RC6 = 1;
+  _delay((unsigned long)((1)*(8000000/4000000.0)));
+  PORTCbits.RC6 = 0;
+  _delay((unsigned long)((100)*(8000000/4000000.0)));
+
+
+  PORTCbits.RC7 = (data & 0x08) ? 1 : 0;
+  PORTBbits.RB2 = (data & 0x04) ? 1 : 0;
+  PORTBbits.RB1 = (data & 0x02) ? 1 : 0;
+  PORTBbits.RB0 = (data & 0x01) ? 1 : 0;
+
+  PORTCbits.RC6 = 1;
+  _delay((unsigned long)((1)*(8000000/4000000.0)));
+  PORTCbits.RC6 = 0;
+  _delay((unsigned long)((100)*(8000000/4000000.0)));
+}
+
+void lcd_display_int(int num) {
+
+  if (num < 0) {
+    lcd_data('-');
+    num = -num;
+  }
+
+
+  if (num > 999)
+    num = 999;
+
+
+  int hundreds = num / 100;
+  int tens = (num / 10) % 10;
+  int ones = num % 10;
+
+
+  if (hundreds > 0) {
+
+    lcd_data('0' + hundreds);
+    lcd_data('0' + tens);
+    lcd_data('0' + ones);
+  } else if (tens > 0) {
+
+    lcd_data('0' + tens);
+    lcd_data('0' + ones);
+  } else {
+
+    lcd_data('0' + ones);
+  }
+}
+
+void getsensorreadings(void) {
+  for (uint8_t i = 0; i < 16; i++) {
+    voltagesum += readADC(3);
+  }
+  voltageraw = voltagesum >> 4;
+  voltagesum = 0;
+  voltage = (((uint32_t)voltageraw * 235) / 1023) + 85;
+
+  if (seconds_counter % 1 == 0 && !sensors_reading_in_progress &&
+      !sensors_reading_complete) {
+    setupTimer0();
+    startSensorReading();
+  }
+
+  if (getSensorResults(&low_sensor_active, &high_sensor_active,
+                       &flow_sensor_active)) {
+
+    if (high_sensor_active) {
+
+      pretankempty = 0;
+    }
+    if (!low_sensor_active && !high_sensor_active) {
+
+      pretankempty = 1;
+    }
+    if(flow_sensor_active){
+      preflowactive = 1;
+    }else{
+      preflowactive = 0;
+    }
+  }
+
+  if (pretankempty != tankempty) {
+    if (lastsensorcheck == 0) {
+      lastsensorcheck = millis;
+    } else if (millis - lastsensorcheck >= sensorbuffer) {
+      lastsensorcheck = 0;
+      tankempty = pretankempty;
+    }
+  } else if (lastsensorcheck != 0 && (millis - lastsensorcheck >= sensorbuffer)) {
+    lastsensorcheck = 0;
+  }
+
+  if (preflowactive != flowactive) {
+    if (lastflowcheck == 0) {
+      lastflowcheck = millis;
+    } else if (millis - lastflowcheck >= sensorbuffer) {
+      lastflowcheck = 0;
+      flowactive = preflowactive;
+    }
+  }else if (lastflowcheck != 0 && (millis - lastflowcheck >= sensorbuffer)) {
+    lastflowcheck = 0;
+  }
+
+
+  if ((millis - last_millis) >= 1000) {
+    seconds_counter++;
+    last_millis = millis;
+  }
+}
+
+void lcd_display_bool_binary(_Bool value) {
+  if (value) {
+    lcd_data('1');
+  } else {
+    lcd_data('0');
+  }
+}
+
+
+void dispinfo(uint8_t refreshtime) {
+# 871 "/home/afnan/Documents/Lucent_Tank_Controller/Water_Tank_Controller_PIC/main.c"
+  if (millis - lastdispupdt >= refreshtime) {
+    lastdispupdt = millis;
+    lcd_cmd(0x01);
+    _delay((unsigned long)((2)*(8000000/4000.0)));
+    lcd_set_cursor(1, 0);
+    lcd_display_int(voltage);
+    lcd_set_cursor(1, 4);
+    lcd_display_int(maxruntimeindex + 1);
+    lcd_set_cursor(1, 7);
+    lcd_display_int(seconds_counter - motorstarttime);
+    lcd_set_cursor(1, 11);
+    lcd_display_bool_binary(voltageerror);
+
+
+    lcd_set_cursor(0, 0);
+    lcd_display_bool_binary(low_sensor_active);
+    lcd_set_cursor(0, 2);
+    lcd_display_bool_binary(high_sensor_active);
+    lcd_set_cursor(0, 4);
+    lcd_display_bool_binary(flow_sensor_active);
+    lcd_set_cursor(0, 6);
+    lcd_display_bool_binary(dryrunerror);
+    lcd_set_cursor(0, 8);
+    lcd_display_int(dryruntime);
+    lcd_set_cursor(0, 13);
+    lcd_display_int(lastflowcheck/1000);
+
+  }
 }

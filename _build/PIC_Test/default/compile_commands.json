@@ -1,8 +1,8 @@
 [
 {
-  "directory": "/home/afnan/MPLABXProjects/PIC_Test.X/_build/PIC_Test/default",
-  "command": "/opt/microchip/xc8/v3.00/bin/xc8-cc -DXPRJ_default=default -D__16F883__ -I/home/afnan/MPLABXProjects/PIC_Test.X/cmake/PIC_Test/default/../../.. -c -mcpu=16F883 -mdfp=/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8 -fno-short-double -fno-short-float -O0 -fasmfile -maddrqual=ignore -mwarn=-3 -Wa,-a -msummary=-psect,-class,+mem,-hex,-file -ginhx32 -Wl,--data-init -mno-keep-startup -mno-osccal -moscval=0x3400 -mno-resetbits -mno-save-resetbits -mno-download -mno-stackcall -mno-default-config-bits -std=c99 -gdwarf-3 -mstack=compiled:auto:auto:auto -o CMakeFiles/PIC_Test_default_default_XC8_compile.dir/home/afnan/MPLABXProjects/PIC_Test.X/main.c.p1 -c /home/afnan/MPLABXProjects/PIC_Test.X/main.c",
-  "file": "/home/afnan/MPLABXProjects/PIC_Test.X/main.c",
-  "output": "CMakeFiles/PIC_Test_default_default_XC8_compile.dir/home/afnan/MPLABXProjects/PIC_Test.X/main.c.p1"
+  "directory": "/home/afnan/Documents/Lucent_Tank_Controller/Water_Tank_Controller_PIC/_build/PIC_Test/default",
+  "command": "/opt/microchip/xc8/v3.00/bin/xc8-cc -DXPRJ_default=default -D__16F883__ -I/home/afnan/Documents/Lucent_Tank_Controller/Water_Tank_Controller_PIC/cmake/PIC_Test/default/../../.. -c -mcpu=16F883 -mdfp=/home/afnan/.mchp_packs/Microchip/PIC16Fxxx_DFP/1.6.156/xc8 -fno-short-double -fno-short-float -O0 -fasmfile -maddrqual=ignore -mwarn=-3 -Wa,-a -msummary=-psect,-class,+mem,-hex,-file -ginhx32 -Wl,--data-init -mno-keep-startup -mno-osccal -moscval=0x3400 -mno-resetbits -mno-save-resetbits -mno-download -mno-stackcall -mno-default-config-bits -std=c99 -gdwarf-3 -mstack=compiled:auto:auto:auto -o CMakeFiles/PIC_Test_default_default_XC8_compile.dir/home/afnan/Documents/Lucent_Tank_Controller/Water_Tank_Controller_PIC/main.c.p1 -c /home/afnan/Documents/Lucent_Tank_Controller/Water_Tank_Controller_PIC/main.c",
+  "file": "/home/afnan/Documents/Lucent_Tank_Controller/Water_Tank_Controller_PIC/main.c",
+  "output": "CMakeFiles/PIC_Test_default_default_XC8_compile.dir/home/afnan/Documents/Lucent_Tank_Controller/Water_Tank_Controller_PIC/main.c.p1"
 }
 ]

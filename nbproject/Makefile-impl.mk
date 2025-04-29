@@ -24,7 +24,7 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 
 
 # Project Name
-PROJECTNAME=PIC_Test.X
+PROJECTNAME=Water_Tank_Controller_PIC
 
 # Active Configuration
 DEFAULTCONF=default

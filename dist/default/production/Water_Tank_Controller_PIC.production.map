@@ -3,20 +3,23 @@ Microchip MPLAB XC8 Compiler V3.00
 Linker command line:
 
 -W-3 --edf=/opt/microchip/xc8/v3.00/pic/dat/20241204225717_en.msgs -cn \
-  -h+PIC_Test_default_default.sym --cmf=PIC_Test_default_default.cmf -z \
-  -Q16F883 -o/tmp/xcXEjPLOO/driver_tmp_3.o --defsym=__MPLAB_BUILD=1 \
-  --fixupoverflow=error -Mmem.map --md=/tmp/xcXEjPLOO/driver_tmp_0.dat -E1 \
-  -ver=XC8 Compiler -ACODE=00h-07FFhx2 -ASTRCODE=00h-0FFFh \
-  -ASTRING=00h-0FFhx16 -ACONST=00h-0FFhx16 -AENTRY=00h-0FFhx16 \
-  -ACOMMON=070h-07Fh -ABANK0=020h-06Fh -ABANK1=0A0h-0EFh \
-  -ABANK2=0120h-016Fh -ARAM=020h-06Fh,0A0h-0EFh,0120h-016Fh \
+  -h+dist/default/production/Water_Tank_Controller_PIC.production.sym \
+  --cmf=dist/default/production/Water_Tank_Controller_PIC.production.cmf -z \
+  -Q16F883 -o/tmp/xcXgNpebF/driver_tmp_3.o --defsym=__MPLAB_BUILD=1 \
+  --fixupoverflow=error \
+  -Mdist/default/production/Water_Tank_Controller_PIC.production.map \
+  --md=/tmp/xcXgNpebF/driver_tmp_0.dat -E1 -ver=XC8 Compiler \
+  -ACODE=00h-07FFhx2 -ASTRCODE=00h-0FFFh -ASTRING=00h-0FFhx16 \
+  -ACONST=00h-0FFhx16 -AENTRY=00h-0FFhx16 -ACOMMON=070h-07Fh \
+  -ABANK0=020h-06Fh -ABANK1=0A0h-0EFh -ABANK2=0120h-016Fh \
+  -ARAM=020h-06Fh,0A0h-0EFh,0120h-016Fh \
   -AABS1=020h-07Fh,0A0h-0EFh,0120h-016Fh -ASFR0=00h-01Fh -ASFR1=080h-09Fh \
   -ASFR2=0100h-011Fh -ASFR3=0180h-01EFh -ACONFIG=02007h-02008h -DCONFIG=2 \
   -AIDLOC=02000h-02003h -DIDLOC=2 -AEEDATA=00h-0FFh/02100h \
   -peeprom_data=EEDATA -DEEDATA=2 -DCODE=2 -DSTRCODE=2 -DSTRING=2 -DCONST=2 \
   -DENTRY=2 -preset_vec=00h,intentry=04h,sivt,init,end_init -ppowerup=CODE \
-  -pcinit=CODE -pfunctab=ENTRY -k /tmp/xcXEjPLOO/driver_tmp_12.o \
-  PIC_Test_default_default.o 
+  -pcinit=CODE -pfunctab=ENTRY -k /tmp/xcXgNpebF/driver_tmp_12.o \
+  dist/default/production/Water_Tank_Controller_PIC.production.o 
 
 Object code version is 3.11
 
@@ -25,11 +28,11 @@ Machine type is 16F883
 
 
                 Name                               Link     Load   Length Selector   Space Scale
-/tmp/xcXEjPLOO/driver_tmp_12.o
+/tmp/xcXgNpebF/driver_tmp_12.o
                 end_init                              B        B        2        8       0
                 reset_vec                             0        0        2        0       0
                 config                             2007     2007        1        0       4
-PIC_Test_default_default.o
+dist/default/production/Water_Tank_Controller_PIC.production.o
                 cinit                                 D        D       16        8       0
                 intentry                              4        4        7        8       0
                 config                             2007     2007        1        0       4
@@ -553,30 +556,6 @@ Module		Function		Class		Link	Load	Size
 
 /opt/microchip/xc8/v3.00/pic/sources/c99/common/awdiv.c estimated size: 99
 
-/home/afnan/Documents/Lucent_Tank_Controller/Water_Tank_Controller_PIC/main.c
-		_getSensorResults		CODE           	0B23	0000	46
-		_dispinfo      		CODE           	0EE1	0000	287
-		_initSystem    		CODE           	0B51	0000	47
-		_lcd_cmd       		CODE           	0D9D	0000	105
-		_lcd_data      		CODE           	0D34	0000	105
-		_startSensorReading		CODE           	0A7A	0000	15
-		_EEPROM_Write  		CODE           	0ABC	0000	30
-		_main          		CODE           	0023	0000	1149
-		_trigger_buzzer		CODE           	0AFC	0000	39
-		_lcd_set_cursor		CODE           	0AAA	0000	18
-		_buzzer_update 		CODE           	07B4	0000	74
-		_init_timer    		CODE           	0A99	0000	17
-		_isr           		CODE           	0BC8	0000	74
-		_check_button_press		CODE           	0E06	0000	108
-		_lcd_display_bool_binary		CODE           	0A89	0000	16
-		_lcd_display_int		CODE           	0705	0000	175
-		_readADC       		CODE           	0ADA	0000	34
-		_getsensorreadings		CODE           	04A0	0000	613
-		_setupTimer0   		CODE           	0A6C	0000	14
-		_initLCD       		CODE           	0E72	0000	111
-
-/home/afnan/Documents/Lucent_Tank_Controller/Water_Tank_Controller_PIC/main.c estimated size: 3077
-
 shared
 		_minvoltagelimit		STRING         	0000	0000	0
 		_maxruntime    		STRING         	0806	0000	10
@@ -605,4 +584,28 @@ shared estimated size: 35
 		___lmul        		CODE           	0B80	0000	72
 
 /opt/microchip/xc8/v3.00/pic/sources/c99/common/Umul32.c estimated size: 72
+
+main.c
+		_getSensorResults		CODE           	0B23	0000	46
+		_dispinfo      		CODE           	0EE1	0000	287
+		_initSystem    		CODE           	0B51	0000	47
+		_lcd_cmd       		CODE           	0D9D	0000	105
+		_lcd_data      		CODE           	0D34	0000	105
+		_startSensorReading		CODE           	0A7A	0000	15
+		_EEPROM_Write  		CODE           	0ABC	0000	30
+		_main          		CODE           	0023	0000	1149
+		_trigger_buzzer		CODE           	0AFC	0000	39
+		_lcd_set_cursor		CODE           	0AAA	0000	18
+		_buzzer_update 		CODE           	07B4	0000	74
+		_init_timer    		CODE           	0A99	0000	17
+		_isr           		CODE           	0BC8	0000	74
+		_check_button_press		CODE           	0E06	0000	108
+		_lcd_display_bool_binary		CODE           	0A89	0000	16
+		_lcd_display_int		CODE           	0705	0000	175
+		_readADC       		CODE           	0ADA	0000	34
+		_getsensorreadings		CODE           	04A0	0000	613
+		_setupTimer0   		CODE           	0A6C	0000	14
+		_initLCD       		CODE           	0E72	0000	111
+
+main.c estimated size: 3077
 

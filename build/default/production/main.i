@@ -8,8 +8,10 @@
 # 2 "<built-in>" 2
 # 1 "main.c" 2
 
-# 1 "/opt/microchip/xc8/v3.00/pic/include/c99/stdbool.h" 1 3
-# 3 "main.c" 2
+# 1 "/opt/microchip/xc8/v3.00/pic/include/builtins.h" 1 3
+
+
+
 # 1 "/opt/microchip/xc8/v3.00/pic/include/c99/stdint.h" 1 3
 
 
@@ -103,7 +105,20 @@ typedef int32_t int_fast32_t;
 typedef uint16_t uint_fast16_t;
 typedef uint32_t uint_fast32_t;
 # 149 "/opt/microchip/xc8/v3.00/pic/include/c99/stdint.h" 2 3
+# 5 "/opt/microchip/xc8/v3.00/pic/include/builtins.h" 2 3
+
+
+#pragma intrinsic(__nop)
+extern void __nop(void);
+# 19 "/opt/microchip/xc8/v3.00/pic/include/builtins.h" 3
+#pragma intrinsic(_delay)
+extern __attribute__((nonreentrant)) void _delay(uint32_t);
+#pragma intrinsic(_delaywdt)
+extern __attribute__((nonreentrant)) void _delaywdt(uint32_t);
+# 3 "main.c" 2
+# 1 "/opt/microchip/xc8/v3.00/pic/include/c99/stdbool.h" 1 3
 # 4 "main.c" 2
+
 # 1 "/opt/microchip/xc8/v3.00/pic/include/xc.h" 1 3
 # 18 "/opt/microchip/xc8/v3.00/pic/include/xc.h" 3
 extern const char __xc8_OPTIM_SPEED;
@@ -206,21 +221,7 @@ uldiv_t uldiv (unsigned long, unsigned long);
 #pragma intrinsic(__builtin_software_breakpoint)
 extern void __builtin_software_breakpoint(void);
 # 24 "/opt/microchip/xc8/v3.00/pic/include/xc.h" 2 3
-# 1 "/opt/microchip/xc8/v3.00/pic/include/builtins.h" 1 3
 
-
-
-
-
-
-#pragma intrinsic(__nop)
-extern void __nop(void);
-# 19 "/opt/microchip/xc8/v3.00/pic/include/builtins.h" 3
-#pragma intrinsic(_delay)
-extern __attribute__((nonreentrant)) void _delay(uint32_t);
-#pragma intrinsic(_delaywdt)
-extern __attribute__((nonreentrant)) void _delaywdt(uint32_t);
-# 25 "/opt/microchip/xc8/v3.00/pic/include/xc.h" 2 3
 
 
 
@@ -2558,7 +2559,7 @@ extern __bank0 unsigned char __resetbits;
 extern __bank0 __bit __powerdown;
 extern __bank0 __bit __timeout;
 # 29 "/opt/microchip/xc8/v3.00/pic/include/xc.h" 2 3
-# 5 "main.c" 2
+# 6 "main.c" 2
 
 
 #pragma config FOSC = INTRC_NOCLKOUT
@@ -2571,7 +2572,9 @@ extern __bank0 __bit __timeout;
 #pragma config IESO = OFF
 #pragma config FCMEN = OFF
 #pragma config LVP = OFF
-# 51 "main.c"
+# 52 "main.c"
+const int blinkdelay = 100;
+
 volatile unsigned long seconds_counter = 0;
 volatile unsigned long millis = 0;
 unsigned long last_millis = 0;
@@ -2579,17 +2582,16 @@ unsigned long last_millis = 0;
 unsigned long lastdryruncheck = 0;
 unsigned long motorstarttime = 0;
 unsigned long lastvoltageerror = 0;
-unsigned int maxvoltageerrortime = 10;
+const unsigned int maxvoltageerrortime = 15;
 
-unsigned int minvoltagelimit = 200;
-unsigned int maxvoltagelimit = 230;
-unsigned int minimumrunningvoltage = 170;
-unsigned int maximumrinningvoltage = 285;
+const unsigned int minvoltagelimit = 185;
+const unsigned int maxvoltagelimit = 265;
+const unsigned int minimumrunningvoltage = 165;
+const unsigned int maximumrinningvoltage = 285;
 
 uint8_t maxruntimeindex = 3;
-uint16_t maxruntime[5] = {30, 45, 60, 120, 0xFFFF};
+const uint16_t maxruntime[5] = {30 , 45 , 60 , 120 , 0xFFFF};
 
-_Bool to = 0;
 _Bool smc = 0;
 _Bool settingsmode = 0;
 
@@ -2617,8 +2619,9 @@ _Bool tankempty = 0;
 _Bool pretankempty = 0;
 _Bool flowactive = 0;
 _Bool preflowactive = 0;
-unsigned int sensorbuffer = 10000;
-unsigned int lastflowcheck = 0;
+
+const unsigned int sensorbuffer = 10000;
+unsigned long lastflowcheck = 0;
 unsigned long lastsensorcheck = 0;
 
 unsigned long buzzer_start_time = 0;
@@ -2663,22 +2666,10 @@ void main(void) {
 
 
   initSystem();
-
-
-
-  minvoltagelimit = 200;
-  maxvoltagelimit = 240;
-  minimumrunningvoltage = 190;
-  maximumrinningvoltage = 250;
-  maxruntimeindex = EEPROM_Read(0x01);
-
-
-
-
+  maxruntimeindex = 4;
 
   potraw = readADC(4);
-
-  dryruntime = (((uint32_t)potraw * 360) / 1023) + 120;
+  dryruntime = (((uint32_t)potraw * 480) / 1023) + 120;
 
   for (uint8_t i = 0; i < 10; i++) {
     PORTAbits.RA0 = 1;
@@ -2689,7 +2680,7 @@ void main(void) {
       if (PORTCbits.RC1 == 0) {
         smc = 1;
       }
-    } else if (i == 3) {
+    } else if (i == 2) {
       if (smc == 1) {
         if (PORTCbits.RC1 == 0) {
           settingsmode = 1;
@@ -2697,12 +2688,12 @@ void main(void) {
         }
       }
     }
-    _delay((unsigned long)((1000)*(8000000/4000.0)));
+    _delay((unsigned long)((blinkdelay)*(8000000/4000.0)));
     PORTAbits.RA0 = 0;
     PORTAbits.RA1 = 0;
     PORTAbits.RA2 = 0;
     PORTAbits.RA4 = 0;
-    _delay((unsigned long)((1000)*(8000000/4000.0)));
+    _delay((unsigned long)((blinkdelay)*(8000000/4000.0)));
   }
 
   trigger_buzzer(3000);
@@ -2716,7 +2707,7 @@ void main(void) {
 
     getsensorreadings();
     potraw = readADC(4);
-    dryruntime = (((uint32_t)potraw * 360) / 1023) + 120;
+    dryruntime = (((uint32_t)potraw * 480) / 1023) + 120;
 
     if (PORTCbits.RC1 == 0) {
       _Bool is_long_press = check_button_press();
@@ -2790,13 +2781,18 @@ void main(void) {
       if (!timeouterror && !voltageerror && !dryrunerror && !motorrunning) {
 
         PORTCbits.RC3 = 1;
+        PORTCbits.RC2 = 1;
         motorstarttime = seconds_counter;
         motorrunning = 1;
         trigger_buzzer(1000);
       }
       if (motorrunning) {
-        if (seconds_counter - motorstarttime >= maxruntime[4]) {
+        if (seconds_counter - motorstarttime >= maxruntime[maxruntimeindex]) {
           timeouterror = 1;
+        }
+
+        if (seconds_counter - motorstarttime >= 3){
+          PORTCbits.RC2 = 0;
         }
         if (!flowactive) {
           if (seconds_counter % 2 == 0) {
@@ -2817,9 +2813,10 @@ void main(void) {
           PORTAbits.RA2 = 0;
         }
 
-         if (voltage > maximumrinningvoltage || voltage < minimumrunningvoltage) {
+        if (voltage > maximumrinningvoltage ||
+            voltage < minimumrunningvoltage) {
           voltageerror = 1;
-         }
+        }
       }
     } else {
       if (motorrunning) {
@@ -2851,25 +2848,25 @@ void main(void) {
       }
     }
 
-
-
     if (voltageerror) {
       if (lastvoltageerror == 0) {
         lastvoltageerror = seconds_counter;
       } else if (seconds_counter - lastvoltageerror >= maxvoltageerrortime) {
         if (voltage > maxvoltagelimit || voltage < minvoltagelimit) {
-        voltageerror = 1;
-      }else{
-        voltageerror = 0;
-
-      }
+          voltageerror = 1;
+        } else {
+          voltageerror = 0;
+        }
         lastvoltageerror = 0;
       }
 
       motorrunning = 0;
+      PORTAbits.RA0 = 0;
     } else if (lastvoltageerror != 0 &&
                (seconds_counter - lastvoltageerror >= maxvoltageerrortime)) {
       lastvoltageerror = 0;
+    } else {
+      PORTAbits.RA0 = 1;
     }
 
     dispinfo(100);
@@ -3272,13 +3269,24 @@ void lcd_display_int(int num) {
     num = 999;
 
 
-  lcd_data('0' + (num / 100));
+  int hundreds = num / 100;
+  int tens = (num / 10) % 10;
+  int ones = num % 10;
 
 
-  lcd_data('0' + ((num / 10) % 10));
+  if (hundreds > 0) {
 
+    lcd_data('0' + hundreds);
+    lcd_data('0' + tens);
+    lcd_data('0' + ones);
+  } else if (tens > 0) {
 
-  lcd_data('0' + (num % 10));
+    lcd_data('0' + tens);
+    lcd_data('0' + ones);
+  } else {
+
+    lcd_data('0' + ones);
+  }
 }
 
 void getsensorreadings(void) {
@@ -3288,8 +3296,6 @@ void getsensorreadings(void) {
   voltageraw = voltagesum >> 4;
   voltagesum = 0;
   voltage = (((uint32_t)voltageraw * 235) / 1023) + 85;
-
-
 
   if (seconds_counter % 1 == 0 && !sensors_reading_in_progress &&
       !sensors_reading_complete) {
@@ -3308,6 +3314,11 @@ void getsensorreadings(void) {
 
       pretankempty = 1;
     }
+    if(flow_sensor_active){
+      preflowactive = 1;
+    }else{
+      preflowactive = 0;
+    }
   }
 
   if (pretankempty != tankempty) {
@@ -3317,21 +3328,22 @@ void getsensorreadings(void) {
       lastsensorcheck = 0;
       tankempty = pretankempty;
     }
-  } else if (lastsensorcheck != 0 &&
-             (millis - lastsensorcheck >= sensorbuffer)) {
+  } else if (lastsensorcheck != 0 && (millis - lastsensorcheck >= sensorbuffer)) {
     lastsensorcheck = 0;
   }
 
-  if (flow_sensor_active != flowactive) {
+  if (preflowactive != flowactive) {
     if (lastflowcheck == 0) {
       lastflowcheck = millis;
     } else if (millis - lastflowcheck >= sensorbuffer) {
       lastflowcheck = 0;
-      flowactive = flow_sensor_active;
+      flowactive = preflowactive;
     }
-  } else if (lastflowcheck != 0 && (millis - lastflowcheck >= sensorbuffer)) {
+  }else if (lastflowcheck != 0 && (millis - lastflowcheck >= sensorbuffer)) {
     lastflowcheck = 0;
   }
+
+
   if ((millis - last_millis) >= 1000) {
     seconds_counter++;
     last_millis = millis;
@@ -3346,33 +3358,35 @@ void lcd_display_bool_binary(_Bool value) {
   }
 }
 
+
 void dispinfo(uint8_t refreshtime) {
+# 871 "main.c"
   if (millis - lastdispupdt >= refreshtime) {
     lastdispupdt = millis;
-
-    lcd_set_cursor(0, 0);
-    lcd_display_int(voltage);
-    lcd_set_cursor(0, 4);
-    lcd_display_int(seconds_counter / 60);
-    lcd_set_cursor(0, 8);
-    lcd_display_int(dryruntime);
-    lcd_set_cursor(0, 12);
-    lcd_display_int(maxruntimeindex);
+    lcd_cmd(0x01);
+    _delay((unsigned long)((2)*(8000000/4000.0)));
     lcd_set_cursor(1, 0);
-    lcd_display_int(EEPROM_Read(0x04));
-
+    lcd_display_int(voltage);
     lcd_set_cursor(1, 4);
-    lcd_display_bool_binary(low_sensor_active);
-    lcd_set_cursor(1, 6);
-    lcd_display_bool_binary(high_sensor_active);
-    lcd_set_cursor(1, 8);
-    lcd_display_bool_binary(flow_sensor_active);
-    lcd_set_cursor(1, 10);
-    lcd_display_bool_binary(tankempty);
-    lcd_display_bool_binary(motorrunning);
-    lcd_display_bool_binary(dryrunerror);
+    lcd_display_int(maxruntimeindex + 1);
+    lcd_set_cursor(1, 7);
+    lcd_display_int(seconds_counter - motorstarttime);
+    lcd_set_cursor(1, 11);
     lcd_display_bool_binary(voltageerror);
 
+
+    lcd_set_cursor(0, 0);
+    lcd_display_bool_binary(low_sensor_active);
+    lcd_set_cursor(0, 2);
+    lcd_display_bool_binary(high_sensor_active);
+    lcd_set_cursor(0, 4);
+    lcd_display_bool_binary(flow_sensor_active);
+    lcd_set_cursor(0, 6);
+    lcd_display_bool_binary(dryrunerror);
+    lcd_set_cursor(0, 8);
+    lcd_display_int(dryruntime);
+    lcd_set_cursor(0, 13);
+    lcd_display_int(lastflowcheck/1000);
 
   }
 }

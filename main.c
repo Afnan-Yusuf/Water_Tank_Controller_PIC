@@ -257,6 +257,7 @@ void main(void) {
       if (!timeouterror && !voltageerror && !dryrunerror && !motorrunning) {
         // Start the motor
         RELAY_MOTOR = 1;
+        RELAY_STARTER = 1;
         motorstarttime = seconds_counter;
         motorrunning = true;
         trigger_buzzer(1000);
@@ -264,6 +265,10 @@ void main(void) {
       if (motorrunning) {
         if (seconds_counter - motorstarttime >= maxruntime[maxruntimeindex]) {
           timeouterror = true;
+        }
+
+        if (seconds_counter - motorstarttime >= 3){
+          RELAY_STARTER = 0;
         }
         if (!flowactive) {
           if (seconds_counter % 2 == 0) {

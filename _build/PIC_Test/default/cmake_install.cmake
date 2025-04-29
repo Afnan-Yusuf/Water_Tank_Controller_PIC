@@ -1,4 +1,4 @@
-# Install script for directory: /home/afnan/MPLABXProjects/PIC_Test.X/cmake/PIC_Test/default
+# Install script for directory: /home/afnan/Documents/Lucent_Tank_Controller/Water_Tank_Controller_PIC/cmake/PIC_Test/default
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/afnan/MPLABXProjects/PIC_Test.X/_build/PIC_Test/default/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/afnan/Documents/Lucent_Tank_Controller/Water_Tank_Controller_PIC/_build/PIC_Test/default/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
